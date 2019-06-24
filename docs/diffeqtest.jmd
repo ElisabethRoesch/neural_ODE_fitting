@@ -1,0 +1,11 @@
+---
+title: Fitting neural ODEs in Julia
+author: Elisabeth Rösch
+---
+
+This is a test of the builder system.
+
+```{julia; echo=false; skip="notebook"}
+using DifferentialEquations
+print("hi")
+```
