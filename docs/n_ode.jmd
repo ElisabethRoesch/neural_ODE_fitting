@@ -81,8 +81,11 @@ c: mixture
 ![accuracy figure](bio.png)
 Left figure from: [Filippi et al., 2016]
 
-> Blockquotes are very handy in email to emulate reply text.
-> This line is part of the same quote.
+
+Fits:
+  
+![biol2 figure](bio_l2.png)
+![biocol figure](bio_col.png)
 
 ## References
 [Chen et al., 2018] Chen, T. Q., Rubanova, Y., Bettencourt, J., and Duvenaud, D. K. (2018).
