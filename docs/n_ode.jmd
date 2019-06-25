@@ -77,7 +77,9 @@ b: collocation based
 c: mixture
 ##### Effect of data size on time per epoch and time for fix data size (30)
 ![time figure](time_ds.png)
-## Application to biological data
+## Application to biological data [Filippi et al., 2016]
+![accuracy figure](bio.png)
+Left figure from: [Filippi et al., 2016]
 
 > Blockquotes are very handy in email to emulate reply text.
 > This line is part of the same quote.
