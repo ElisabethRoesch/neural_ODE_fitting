@@ -3,9 +3,97 @@ title: Fitting neural ODEs in Julia
 author: Elisabeth Rösch
 ---
 
-Neural ODEs
+## 1. Motivation
+![Motivation figure](moti.png)
 
-```{julia; echo=false; skip="notebook"}
-using DifferentialEquations
-print("hi")
+## 2. Theoretical background
+
+##### Ordinary Differential Equation (ODE)
+$\frac{du}{dt}=f(u,p,t)$
+where u is species, t is time and f is function.
+##### Neural ODE [Chen et al., 2018]
+$\frac{du}{dt}=f(u,p,t)$
+where u is species, t is time and where f is _neural net_.
+##### Training neural ODE: Optimizing a loss function
+![l2 figure](train.png)
+before and after training.
+
+
+##### In Julia: DiffEqFlux.jl [Rackauckas et al., 2019]
+Dependencies:
+```julia
+using Flux, DiffEqFlux, OrdinaryDiffEq, DiffEqParamEstim, Plots, Optim, Dates
+using BSON: @save;
 ```
+Define neural ODE:
+```julia
+# Derivative is modeled by a neural net.
+dudt = Chain(x -> x.^3,
+       Dense(2,50, tanh),
+       Dense(50,2))
+# Parameters of the model which are to be learnt. They are: W1 (2x50), b1 (50), W2 (50x2), b2 (2)
+ps = Flux.params(dudt)
+# Defining anonymous function for the neural ODE with the model. in: u0, out: solution with current params.
+n_ode = x->neural_ode(dudt, x, tspan, Tsit5(), saveat = t, reltol = 1e-7, abstol = 1e-9);
+```
+##### Three training methods
+###### 1. L2 norm
+![l2 figure](l2_tb.png)
+
+```julia
+# L2 loss
+L2_loss_fct() = sum(abs2, ode_data .- n_ode(u0));
+```
+
+###### 2. collocation based  [Liang and Wu, 2008]
+![col figure](col_tb.png)
+```julia
+# Getting loss function from two stage collocation function
+function node_two_stage_function(model, x, tspan, saveat, ode_data,
+            args...; kwargs...)
+  dudt_(du,u,p,t) = du .= model(u)
+  prob_fly = ODEProblem(dudt_,x,tspan)
+  two_stage_method(prob_fly, saveat, ode_data)
+end
+loss_n_ode = node_two_stage_function(dudt, u0, tspan, t, ode_data, Tsit5(), reltol=1e-7, abstol=1e-9)
+two_stage_loss_fct()=loss_n_ode.cost_function(ps);
+```
+###### 3. Mixture
+![mix figure](tb.png)
+## 3. Results
+##### Accuracy
+![accuracy figure](results.png)
+a: L2 norm
+
+b: collocation based
+
+c: mixture
+##### Convergence
+![accuracy figure](conv.png)
+a: L2 norm
+
+b: collocation based
+
+c: mixture
+##### Effect of data size on time per epoch and time for fix data size (30)
+![time figure](time_ds.png)
+## Application to biological data
+
+> Blockquotes are very handy in email to emulate reply text.
+> This line is part of the same quote.
+
+## References
+[Chen et al., 2018] Chen, T. Q., Rubanova, Y., Bettencourt, J., and Duvenaud, D. K. (2018).
+Neural ordinary differential equations.
+CoRR.
+
+[Filippi et al., 2016] Filippi, S. et al. (2016).
+Robustness of MEK-ERK Dynamics and Origins of Cell-to-Cell Variability in MAPK Signaling.
+Cell Reports, 15(11):2524–2535.
+
+[Liang and Wu, 2008] Liang, H. and Wu, H. (2008).
+Parameter estimation for differential equation models using a framework of measurement error in regression models. Journal of the American Statistical Association.
+
+[Rackauckas et al., 2019] Rackauckas, C., Innes, M., Ma, Y., Bettencourt, J., White, L., and Dixit, V. (2019).
+Diffeqflux.jl - a julia library for neural differential equations.
+CoRR.

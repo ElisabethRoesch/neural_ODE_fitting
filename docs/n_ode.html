@@ -661,12 +661,110 @@ div.title {text-align: center;}
             
           </div>
 
-          <p>Neural ODEs</p>
+          <h2>1. Motivation</h2>
+<p><img src="moti.png" alt="Motivation figure" /></p>
+<h2>2. Theoretical background</h2>
+<h5>Ordinary Differential Equation &#40;ODE&#41;</h5>
+<p class="math">\[
+\frac{du}{dt}=f(u,p,t)
+\]</p>
+<p>where u is species, t is time and f is function.</p>
+<h5>Neural ODE &#91;Chen et al., 2018&#93;</h5>
+<p class="math">\[
+\frac{du}{dt}=f(u,p,t)
+\]</p>
+<p>where u is species, t is time and where f is <em>neural net</em>.</p>
+<h5>Training neural ODE: Optimizing a loss function</h5>
+<p><img src="train.png" alt="l2 figure" /> before and after training.</p>
+<h5>In Julia: DiffEqFlux.jl &#91;Rackauckas et al., 2019&#93;</h5>
+<p>Dependencies:</p>
 
-<pre class="output">
-hi
+
+<pre class='hljl'>
+<span class='hljl-k'>using</span><span class='hljl-t'> </span><span class='hljl-n'>Flux</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>DiffEqFlux</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>OrdinaryDiffEq</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>DiffEqParamEstim</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>Plots</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>Optim</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>Dates</span><span class='hljl-t'>
+</span><span class='hljl-k'>using</span><span class='hljl-t'> </span><span class='hljl-n'>BSON</span><span class='hljl-oB'>:</span><span class='hljl-t'> </span><span class='hljl-nd'>@save</span><span class='hljl-p'>;</span>
 </pre>
 
+
+
+<p>Define neural ODE:</p>
+
+
+<pre class='hljl'>
+<span class='hljl-cs'># Derivative is modeled by a neural net.</span><span class='hljl-t'>
+</span><span class='hljl-n'>dudt</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>Chain</span><span class='hljl-p'>(</span><span class='hljl-n'>x</span><span class='hljl-t'> </span><span class='hljl-oB'>-&gt;</span><span class='hljl-t'> </span><span class='hljl-n'>x</span><span class='hljl-oB'>.^</span><span class='hljl-ni'>3</span><span class='hljl-p'>,</span><span class='hljl-t'>
+       </span><span class='hljl-nf'>Dense</span><span class='hljl-p'>(</span><span class='hljl-ni'>2</span><span class='hljl-p'>,</span><span class='hljl-ni'>50</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>tanh</span><span class='hljl-p'>),</span><span class='hljl-t'>
+       </span><span class='hljl-nf'>Dense</span><span class='hljl-p'>(</span><span class='hljl-ni'>50</span><span class='hljl-p'>,</span><span class='hljl-ni'>2</span><span class='hljl-p'>))</span><span class='hljl-t'>
+</span><span class='hljl-cs'># Parameters of the model which are to be learnt. They are: W1 (2x50), b1 (50), W2 (50x2), b2 (2)</span><span class='hljl-t'>
+</span><span class='hljl-n'>ps</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>Flux</span><span class='hljl-oB'>.</span><span class='hljl-nf'>params</span><span class='hljl-p'>(</span><span class='hljl-n'>dudt</span><span class='hljl-p'>)</span><span class='hljl-t'>
+</span><span class='hljl-cs'># Defining anonymous function for the neural ODE with the model. in: u0, out: solution with current params.</span><span class='hljl-t'>
+</span><span class='hljl-n'>n_ode</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>x</span><span class='hljl-oB'>-&gt;</span><span class='hljl-nf'>neural_ode</span><span class='hljl-p'>(</span><span class='hljl-n'>dudt</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>x</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>tspan</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-nf'>Tsit5</span><span class='hljl-p'>(),</span><span class='hljl-t'> </span><span class='hljl-n'>saveat</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>t</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>reltol</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nfB'>1e-7</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>abstol</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nfB'>1e-9</span><span class='hljl-p'>);</span>
+</pre>
+
+
+
+<h5>Three training methods</h5>
+<h6>1. L2 norm</h6>
+<p><img src="l2_tb.png" alt="l2 figure" /></p>
+
+
+<pre class='hljl'>
+<span class='hljl-cs'># L2 loss</span><span class='hljl-t'>
+</span><span class='hljl-nf'>L2_loss_fct</span><span class='hljl-p'>()</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>sum</span><span class='hljl-p'>(</span><span class='hljl-n'>abs2</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>ode_data</span><span class='hljl-t'> </span><span class='hljl-oB'>.-</span><span class='hljl-t'> </span><span class='hljl-nf'>n_ode</span><span class='hljl-p'>(</span><span class='hljl-n'>u0</span><span class='hljl-p'>));</span>
+</pre>
+
+
+
+<h6>2. collocation based  &#91;Liang and Wu, 2008&#93;</h6>
+<p><img src="col_tb.png" alt="col figure" /></p>
+
+
+<pre class='hljl'>
+<span class='hljl-cs'># Getting loss function from two stage collocation function</span><span class='hljl-t'>
+</span><span class='hljl-k'>function</span><span class='hljl-t'> </span><span class='hljl-nf'>node_two_stage_function</span><span class='hljl-p'>(</span><span class='hljl-n'>model</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>x</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>tspan</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>saveat</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>ode_data</span><span class='hljl-p'>,</span><span class='hljl-t'>
+            </span><span class='hljl-n'>args</span><span class='hljl-oB'>...</span><span class='hljl-p'>;</span><span class='hljl-t'> </span><span class='hljl-n'>kwargs</span><span class='hljl-oB'>...</span><span class='hljl-p'>)</span><span class='hljl-t'>
+  </span><span class='hljl-nf'>dudt_</span><span class='hljl-p'>(</span><span class='hljl-n'>du</span><span class='hljl-p'>,</span><span class='hljl-n'>u</span><span class='hljl-p'>,</span><span class='hljl-n'>p</span><span class='hljl-p'>,</span><span class='hljl-n'>t</span><span class='hljl-p'>)</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-n'>du</span><span class='hljl-t'> </span><span class='hljl-oB'>.=</span><span class='hljl-t'> </span><span class='hljl-nf'>model</span><span class='hljl-p'>(</span><span class='hljl-n'>u</span><span class='hljl-p'>)</span><span class='hljl-t'>
+  </span><span class='hljl-n'>prob_fly</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>ODEProblem</span><span class='hljl-p'>(</span><span class='hljl-n'>dudt_</span><span class='hljl-p'>,</span><span class='hljl-n'>x</span><span class='hljl-p'>,</span><span class='hljl-n'>tspan</span><span class='hljl-p'>)</span><span class='hljl-t'>
+  </span><span class='hljl-nf'>two_stage_method</span><span class='hljl-p'>(</span><span class='hljl-n'>prob_fly</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>saveat</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>ode_data</span><span class='hljl-p'>)</span><span class='hljl-t'>
+</span><span class='hljl-k'>end</span><span class='hljl-t'>
+</span><span class='hljl-n'>loss_n_ode</span><span class='hljl-t'> </span><span class='hljl-oB'>=</span><span class='hljl-t'> </span><span class='hljl-nf'>node_two_stage_function</span><span class='hljl-p'>(</span><span class='hljl-n'>dudt</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>u0</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>tspan</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>t</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>ode_data</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-nf'>Tsit5</span><span class='hljl-p'>(),</span><span class='hljl-t'> </span><span class='hljl-n'>reltol</span><span class='hljl-oB'>=</span><span class='hljl-nfB'>1e-7</span><span class='hljl-p'>,</span><span class='hljl-t'> </span><span class='hljl-n'>abstol</span><span class='hljl-oB'>=</span><span class='hljl-nfB'>1e-9</span><span class='hljl-p'>)</span>
+</pre>
+
+
+<pre class="julia-error">
+ERROR: UndefVarError: u0 not defined
+</pre>
+
+
+
+<pre class='hljl'>
+<span class='hljl-nf'>two_stage_loss_fct</span><span class='hljl-p'>()</span><span class='hljl-oB'>=</span><span class='hljl-n'>loss_n_ode</span><span class='hljl-oB'>.</span><span class='hljl-nf'>cost_function</span><span class='hljl-p'>(</span><span class='hljl-n'>ps</span><span class='hljl-p'>);</span>
+</pre>
+
+
+
+<h6>3. Mixture</h6>
+<p><img src="tb.png" alt="mix figure" /></p>
+<h2>3. Results</h2>
+<h5>Accuracy</h5>
+<p><img src="results.png" alt="accuracy figure" /> a: L2 norm</p>
+<p>b: collocation based</p>
+<p>c: mixture</p>
+<h5>Convergence</h5>
+<p><img src="conv.png" alt="accuracy figure" /> a: L2 norm</p>
+<p>b: collocation based</p>
+<p>c: mixture</p>
+<h5>Effect of data size on time per epoch and time for fix data size &#40;30&#41;</h5>
+<p><img src="time_ds.png" alt="time figure" /></p>
+<h2>Application to biological data</h2>
+<blockquote>
+<p>Blockquotes are very handy in email to emulate reply text. This line is part of the same quote.</p>
+</blockquote>
+<h2>References</h2>
+<p>&#91;Chen et al., 2018&#93; Chen, T. Q., Rubanova, Y., Bettencourt, J., and Duvenaud, D. K. &#40;2018&#41;. Neural ordinary differential equations. CoRR.</p>
+<p>&#91;Filippi et al., 2016&#93; Filippi, S. et al. &#40;2016&#41;. Robustness of MEK-ERK Dynamics and Origins of Cell-to-Cell Variability in MAPK Signaling. Cell Reports, 15&#40;11&#41;:2524–2535.</p>
+<p>&#91;Liang and Wu, 2008&#93; Liang, H. and Wu, H. &#40;2008&#41;. Parameter estimation for differential equation models using a framework of measurement error in regression models. Journal of the American Statistical Association.</p>
+<p>&#91;Rackauckas et al., 2019&#93; Rackauckas, C., Innes, M., Ma, Y., Bettencourt, J., White, L., and Dixit, V. &#40;2019&#41;. Diffeqflux.jl - a julia library for neural differential equations. CoRR.</p>
 
 
 
@@ -674,7 +772,7 @@ hi
           <div class="footer"><p>
           Published from <a href="n_ode.jmd">n_ode.jmd</a> using
           <a href="http://github.com/mpastell/Weave.jl">Weave.jl</a>
-           on 2019-06-24.
+           on 2019-06-25.
           <p></div>
 
 
