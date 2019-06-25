@@ -5,4 +5,5 @@ I look at:
   1. L2 norm
   2. collocation method
   3. mix them
-Next: GPU on sever
+  
+Next: GPU on local or on server. Bio data new neural ODEs.
