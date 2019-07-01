@@ -7,4 +7,4 @@ I look at:
   2. collocation method
   3. mix them
 
-Next: GPU on local or on server. Bio data new neural ODEs.
+Next: Implement quantification on CPU while GPU is set up on local machine and on server. 
