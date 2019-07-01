@@ -89,6 +89,11 @@ Fits:
 
 ##### New systems:
   https://www.comp-engine.org/#!browse/category
+
+  Fits:
+
+  ![biol2 figure](bio2.png)
+  ![biocol figure](bio2_loss.png)
 ## References
 [Chen et al., 2018] Chen, T. Q., Rubanova, Y., Bettencourt, J., and Duvenaud, D. K. (2018).
 Neural ordinary differential equations.
