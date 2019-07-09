@@ -43,7 +43,6 @@ ____
 
 Training neural net:
 
-
 Standard L2. problem if much data, ode solver precise, it can get insufficient slow, depending of your circumstances obviously.
 New idea: collocation based approach.
 And: mixing procedures.
