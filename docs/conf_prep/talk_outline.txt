@@ -60,19 +60,28 @@ ___
 
 
 Biological:
-First example I want to present: Van Der Pol Osciliator
-Explain bio relevance
+First example I want to present: Van Der Pol Osciliator (undriven)
+Explain bio relevance: extended model -> model for action potentials of neurons
 example: w\o noise -> figure
 Discuss: if noise: 0.1 of gaussian infer structure. 
 Higher noise level: pump up neural net
 
+This was model for biological relevant system (diff eq known) we just saw we can fit to -> good. But now: actual experimental data.
+Here problem: 
+1. Time series data is rare and stiff often. 
+2. Technical precision.
+3. Underlying systems are complex.
+
 Second example: actual biological data 
 E1. experimental: something easy ######## TODO ########
-Explain briefly experiment. Show fit.
+Explain briefly experiment and show fit. 
+
+
+
 E2. experimental and stiff: sarahs 
 Explain briefly experiment. Show fit.
 Explain idea of multiple shooting: ######## TODO ########
-highlight biological complications
+
 
 ____
 
