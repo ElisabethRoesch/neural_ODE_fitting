@@ -77,7 +77,6 @@ E1. experimental: something easy ######## TODO ########
 Explain briefly experiment and show fit. 
 
 
-
 E2. experimental and stiff: sarahs 
 Explain briefly experiment. Show fit.
 Explain idea of multiple shooting: ######## TODO ########
