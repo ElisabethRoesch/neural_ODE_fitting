@@ -73,7 +73,3 @@ scatter(t, ode_data_t[1,:], label = "data")
 scatter!(t, ode_data_t[2,:], label = "data")
 plot!(t, Flux.data(pred_t[1,:]), label = "prediction")
 plot!(t, Flux.data(pred_t[2,:]), label = "prediction")
-
-44899000000/786320000000
-
-ode_data
