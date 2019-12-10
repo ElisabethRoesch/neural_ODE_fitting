@@ -19,9 +19,9 @@ function update_saver(saver, loss_i, time_i)
     saver.losses[epoch_i] = loss_i
     saver.times[epoch_i] = time_i
 end
-u0 = Float32[2.; 0.]
-datasize = 30
-tspan = (0.0f0, 1.5f0)
+u0 = Float32[1.5; 0.]
+datasize = 100
+tspan = (0.0f0, 3.f0)
 t = range(tspan[1], tspan[2], length = datasize)
 function trueODEfunc(du, u, p, t)
   true_A = [-0.1 2.0; -2.0 -0.1]
@@ -36,7 +36,10 @@ dudt = Chain(x -> x.^3,
        Dense(50,2))
 ps = Flux.params(dudt)
 n_ode = x->neural_ode(dudt, x, tspan, Tsit5(), saveat = t, reltol = 1e-7, abstol = 1e-9)
-n_epochs = 1000
+n_epochs = 800
+verify = 50
+species = ["X","Y"]
+test = [1,2]
 sa_l2 = saver(n_epochs)
 L2_loss_fct() = sum(abs2, ode_data .- n_ode(u0))
 cb = function ()
@@ -44,32 +47,36 @@ cb = function ()
     xx=Tracker.data(L2_loss_fct())
     update_saver(sa_l2,xx , Dates.Time(Dates.now()))
     println("\"", xx, "\" \"", Dates.Time(Dates.now()), "\";")
+    if mod(sa_l2.count_epochs-1, verify)==0
+        pred = n_ode(u0)
+        a = plot(ode_data[test[1],:], ode_data[test[2],:], color = "green",xlab = species[test[1]], ylab = species[test[2]], label = "", legend=:bottomright, grid = "off")
+        scatter!(ode_data[test[1],:], ode_data[test[2],:], label = "A", color = "green")
+        plot!(Flux.data(pred[test[1],:]), Flux.data(pred[test[2],:]), color = "red", xlab = species[test[1]], ylab = species[test[2]], label = "", grid = "off")
+        scatter!(Flux.data(pred[test[1],:]), Flux.data(pred[test[2],:]), label = "B", color = "red")
+        display(a)
+        savefig(string("paper/simple/L2/", sa_l2.count_epochs,"te_fit_in_statespace.pdf"))
+        @save string("paper/simple/L2/", sa_l2.count_epochs,"te_dudt.bson") dudt
+    end
 end
 
-pred = n_ode(u0)
-scatter(t, ode_data[1,:], label = "Observation 1", color = "blue", grid = "off",xlab= "Time", ylab= "Abundance", legend=:top)
-scatter!(t, ode_data[2,:], label = "Observation 2", color = "orange")
-plot!(t, Flux.data(pred[1,:]), label = "Prediction 1", color = "blue")
-plot!(t, Flux.data(pred[2,:]), label = "Prediction 2", color = "orange")
-
-opt = ADAM(0.1)
+opt1 = Descent(0.0001)
 data = Iterators.repeated((), n_epochs)
-@time Flux.train!(L2_loss_fct, ps, data, opt, cb = cb)
-
+@time Flux.train!(L2_loss_fct, ps, data, opt1, cb = cb)
 pred = n_ode(u0)
-scatter(t, ode_data[1,:], label = "Observation 1", color = "blue", grid = "off",xlab= "Time", ylab= "Abundance", legend=:top)
-scatter!(t, ode_data[2,:], label = "Observation 2", color = "orange")
-plot!(t, Flux.data(pred[1,:]), label = "Prediction 1", color = "blue")
-plot!(t, Flux.data(pred[2,:]), label = "Prediction 2", color = "orange")
-#savefig("sogood.png")
-#@save "model_l2_1000_epochs.bson" dudt
-header = string("l2 losses:",sa_l2.times[end]-sa_l2.times[1])
-plot(range(1, stop = length(sa_l2.losses)), sa_l2.losses, width = 2, label = header, grid = "off")
-test_u0 = [0.1 , 5.5]
-pred_t = n_ode(test_u0)
-prob_t = ODEProblem(trueODEfunc, test_u0, tspan)
-ode_data_t = Array(solve(prob_t, Tsit5(), saveat = t))
-scatter(t, ode_data_t[1,:], label = "data")
-scatter!(t, ode_data_t[2,:], label = "data")
-plot!(t, Flux.data(pred_t[1,:]), label = "prediction")
-plot!(t, Flux.data(pred_t[2,:]), label = "prediction")
+a = plot(ode_data[test[1],:], ode_data[test[2],:], color = "green",xlab = species[test[1]], ylab = species[test[2]], label = "", legend=:bottomright, grid = "off")
+scatter!(ode_data[test[1],:], ode_data[test[2],:], label = "A", color = "green")
+plot!(Flux.data(pred[test[1],:]), Flux.data(pred[test[2],:]), color = "red", xlab = species[test[1]], ylab = species[test[2]], label = "", grid = "off")
+scatter!(Flux.data(pred[test[1],:]), Flux.data(pred[test[2],:]), label = "B", color = "red")
+display(a)
+savefig(string("paper/simple/L2/", sa_l2.count_epochs,"te_fit_in_statespace.pdf"))
+@save string("paper/simple/L2/", sa_l2.count_epochs,"te_dudt.bson") dudt
+
+
+
+# pred = n_ode(u0)
+# scatter(t, ode_data[1,:], label = "Observation 1", color = "blue", grid = "off",xlab= "Time", ylab= "Abundance", legend=:top)
+# scatter!(t, ode_data[2,:], label = "Observation 2", color = "orange")
+# plot!(t, Flux.data(pred[1,:]), label = "Prediction 1", color = "blue")
+# plot!(t, Flux.data(pred[2,:]), label = "Prediction 2", color = "orange")
+# header = string("l2 losses:",sa_l2.times[end]-sa_l2.times[1])
+# plot(range(1, stop = length(sa_l2.losses)), sa_l2.losses, width = 2, label = header, grid = "off")
