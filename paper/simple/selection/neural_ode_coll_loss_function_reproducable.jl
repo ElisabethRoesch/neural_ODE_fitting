@@ -60,7 +60,7 @@ n_ode = x->neural_ode(dudt, x, tspan, Tsit5(), saveat=t, reltol=1e-7, abstol=1e-
 n_epochs = 800
 verify = 50# for <verify>th epoch the L2 is calculated
 data1 = Iterators.repeated((), n_epochs)
-opt1 = Descent(0.001)
+opt1 = Descent(0.0001)
 sa = saver(n_epochs)
 L2_loss_fct() = sum(abs2,ode_data .- n_ode(u0))
 # Callback function to observe two stage training.
@@ -76,8 +76,8 @@ cb1 = function ()
         plot!(Flux.data(pred[test[1],:]), Flux.data(pred[test[2],:]), color = "red", xlab = species[test[1]], ylab = species[test[2]], label = "", grid = "off")
         scatter!(Flux.data(pred[test[1],:]), Flux.data(pred[test[2],:]), label = "B", color = "red")
         display(a)
-        savefig(string("paper/simple/col/", sa.count_epochs,"te_fit_in_statespace.pdf"))
-        @save string("paper/simple/col/", sa.count_epochs,"te_dudt.bson") dudt
+        savefig(string("paper/simple/model1_default_run5/", sa.count_epochs,"te_fit_in_statespace.pdf"))
+        @save string("paper/simple/model1_default_run5/", sa.count_epochs,"te_dudt.bson") dudt
     else
         update_saver(sa, Tracker.data(two_stage_loss_fct()),0,Dates.Time(Dates.now()))
         # println("\"",Tracker.data(two_stage_loss_fct()),"\" \"",Dates.Time(Dates.now()),"\";")
@@ -91,23 +91,14 @@ scatter!(ode_data[test[1],:], ode_data[test[2],:], label = "A", color = "green")
 plot!(Flux.data(pred[test[1],:]), Flux.data(pred[test[2],:]), color = "red", xlab = species[test[1]], ylab = species[test[2]], label = "", grid = "off")
 scatter!(Flux.data(pred[test[1],:]), Flux.data(pred[test[2],:]), label = "B", color = "red")
 display(a)
-savefig(string("paper/simple/col/", sa.count_epochs,"te_fit_in_statespace.pdf"))
-@save string("paper/simple/col/", sa.count_epochs,"te_dudt.bson") dudt
+savefig(string("paper/simple/model1_default_run5/", sa.count_epochs,"te_fit_in_statespace.pdf"))
+@save string("paper/simple/model1_default_run5/", sa.count_epochs,"te_dudt.bson") dudt
 
-using JLD
-JLD.save("paper/simple/col/losses.jld", "col_losses", sa.losses)
-JLD.save("paper/simple/col/times.jld", "col_times", sa.times)
 
 # scatter(t, ode_data[1,:], label = "data", grid = "off")
 # scatter!(t, ode_data[2,:], label = "data")
 # plot!(t, Flux.data(pred[1,:]), label = "prediction")
 # plot!(t, Flux.data(pred[2,:]), label = "prediction")
 # header = string("col losses: ", sa.times[end] - sa.times[1])
-plot(range(1,stop=length(sa.l2s)),sa.l2s,label = "l2s", grid = "off")
-
-selection = range(7,step = 10, stop =800)
-plot(range(1,stop=length(sa_l2.losses))[selection],color = "blue",log.(sa_l2.losses)[selection],width  =2, label ="Loss 1",  grid = "off")
-plot!(range(1,stop=length(sa.losses))[selection],color = "orange",log.(sa.losses)[selection],width  =2, label ="Loss 2", xlab = "Training epoch", ylab= "Log(Loss)", grid = "off")
-vline!([51,251,401,551,751], linewidth = 2,color = "purple", label = "Selection")
-
-savefig("paper/simple/selection/loss.pdf")
+# plot(range(1,stop=length(sa.l2s)),sa.l2s,label = "l2s", grid = "off")
+# plot!(range(1,stop=length(sa.losses)),sa.losses,width  =2, label = header)

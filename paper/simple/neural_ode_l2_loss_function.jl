@@ -3,21 +3,21 @@ using Flux, DiffEqFlux, DifferentialEquations,DiffEqParamEstim, Plots, Optim, Da
 using BSON: @save
 print("done")
 # Structure to observe training
-mutable struct saver
+mutable struct saver_l2
     losses::Array{Float64,1}
     times::Array{Dates.Time,1}
     count_epochs::Int128
 end
-function saver(n_epochs)
+function saver_l2(n_epochs)
     losses = zeros(n_epochs)
     times = fill(Dates.Time(Dates.now()),n_epochs)
     count_epochs = 0
-    return saver(losses,times,count_epochs)
+    return saver_l2(losses,times,count_epochs)
 end
-function update_saver(saver, loss_i, time_i)
-    epoch_i = saver.count_epochs
-    saver.losses[epoch_i] = loss_i
-    saver.times[epoch_i] = time_i
+function update_saver(saver_l2, loss_i, time_i)
+    epoch_i = saver_l2.count_epochs
+    saver_l2.losses[epoch_i] = loss_i
+    saver_l2.times[epoch_i] = time_i
 end
 u0 = Float32[1.5; 0.]
 datasize = 100
@@ -40,7 +40,7 @@ n_epochs = 800
 verify = 50
 species = ["X","Y"]
 test = [1,2]
-sa_l2 = saver(n_epochs)
+sa_l2 = saver_l2(n_epochs)
 L2_loss_fct() = sum(abs2, ode_data .- n_ode(u0))
 cb = function ()
     sa_l2.count_epochs = sa_l2.count_epochs +  1
@@ -59,7 +59,7 @@ cb = function ()
     end
 end
 
-opt1 = Descent(0.0001)
+opt1 = Descent(0.001)
 data = Iterators.repeated((), n_epochs)
 @time Flux.train!(L2_loss_fct, ps, data, opt1, cb = cb)
 pred = n_ode(u0)
@@ -71,7 +71,12 @@ display(a)
 savefig(string("paper/simple/L2/", sa_l2.count_epochs,"te_fit_in_statespace.pdf"))
 @save string("paper/simple/L2/", sa_l2.count_epochs,"te_dudt.bson") dudt
 
+using JLD
+JLD.save("paper/simple/L2/losses.jld", "l2_losses", saver_l2.losses)
+JLD.save("paper/simple/L2/times.jld", "l2_times", saver_l2.times)
 
+#save("data.jld", "data", r)
+#load("data.jld")["data"]
 
 # pred = n_ode(u0)
 # scatter(t, ode_data[1,:], label = "Observation 1", color = "blue", grid = "off",xlab= "Time", ylab= "Abundance", legend=:top)
