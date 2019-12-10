@@ -36,7 +36,7 @@ dudt = Chain(x -> x.^3,
        Dense(50,2))
 ps = Flux.params(dudt)
 n_ode = x->neural_ode(dudt, x, tspan, Tsit5(), saveat = t, reltol = 1e-7, abstol = 1e-9)
-n_epochs = 800
+n_epochs = 1500
 verify = 50
 species = ["X","Y"]
 test = [1,2]
