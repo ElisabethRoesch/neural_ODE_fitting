@@ -59,7 +59,7 @@ cb = function ()
     end
 end
 
-opt1 = Descent(0.0001)
+opt1 = Descent(0.001)
 data = Iterators.repeated((), n_epochs)
 @time Flux.train!(L2_loss_fct, ps, data, opt1, cb = cb)
 pred = n_ode(u0)
