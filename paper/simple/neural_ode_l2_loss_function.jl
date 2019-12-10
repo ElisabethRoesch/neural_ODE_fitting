@@ -36,7 +36,7 @@ dudt = Chain(x -> x.^3,
        Dense(50,2))
 ps = Flux.params(dudt)
 n_ode = x->neural_ode(dudt, x, tspan, Tsit5(), saveat = t, reltol = 1e-7, abstol = 1e-9)
-n_epochs = 1500
+n_epochs = 800
 verify = 50
 species = ["X","Y"]
 test = [1,2]
@@ -59,7 +59,7 @@ cb = function ()
     end
 end
 
-opt1 = Descent(0.001)
+opt1 = Descent(0.0001)
 data = Iterators.repeated((), n_epochs)
 @time Flux.train!(L2_loss_fct, ps, data, opt1, cb = cb)
 pred = n_ode(u0)
