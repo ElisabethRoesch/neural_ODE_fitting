@@ -48,9 +48,8 @@ two_stage_loss_fct()=loss_n_ode.cost_function(ps)
 esti =loss_n_ode.estimated_solution
 species = ["X","Y"]
 test = [1,2]
-plot(ode_data[test[1],:], ode_data[test[2],:], color = "green", xlab = species[test[1]], ylab = species[test[2]], label = "", grid = "off")
-scatter!(ode_data[test[1],:], ode_data[test[2],:], label = "Path in state space", color = "green")
-plot!(esti[test[1],:], esti[test[2],:], color = "red", xlab = species[test[1]], ylab = species[test[2]], label = "", grid = "off")
+
+
 scatter!(esti[test[1],:], esti[test[2],:], label = "Path in state space", color = "red")
 scatter(t, ode_data[1,:], label = "Observation: Species 1", grid = "off",legend =:topleft)
 scatter!(t, ode_data[2,:], label = "Observation: Species 2")
@@ -76,8 +75,8 @@ cb1 = function ()
         plot!(Flux.data(pred[test[1],:]), Flux.data(pred[test[2],:]), color = "red", xlab = species[test[1]], ylab = species[test[2]], label = "", grid = "off")
         scatter!(Flux.data(pred[test[1],:]), Flux.data(pred[test[2],:]), label = "B", color = "red")
         display(a)
-        savefig(string("paper/simple/col/", sa.count_epochs,"te_fit_in_statespace.pdf"))
-        @save string("paper/simple/col/", sa.count_epochs,"te_dudt.bson") dudt
+        #savefig(string("paper/simple/col/", sa.count_epochs,"te_fit_in_statespace.pdf"))
+        #@save string("paper/simple/col/", sa.count_epochs,"te_dudt.bson") dudt
     else
         update_saver(sa, Tracker.data(two_stage_loss_fct()),0,Dates.Time(Dates.now()))
         # println("\"",Tracker.data(two_stage_loss_fct()),"\" \"",Dates.Time(Dates.now()),"\";")
@@ -91,23 +90,94 @@ scatter!(ode_data[test[1],:], ode_data[test[2],:], label = "A", color = "green")
 plot!(Flux.data(pred[test[1],:]), Flux.data(pred[test[2],:]), color = "red", xlab = species[test[1]], ylab = species[test[2]], label = "", grid = "off")
 scatter!(Flux.data(pred[test[1],:]), Flux.data(pred[test[2],:]), label = "B", color = "red")
 display(a)
-savefig(string("paper/simple/col/", sa.count_epochs,"te_fit_in_statespace.pdf"))
-@save string("paper/simple/col/", sa.count_epochs,"te_dudt.bson") dudt
+#savefig(string("paper/simple/col/", sa.count_epochs,"te_fit_in_statespace.pdf"))
+#@save string("paper/simple/col/", sa.count_epochs,"te_dudt.bson") dudt
+
+
+est_c = "#D6B656"
+pred_col_c = "#82B366"
+pred_l2_c = "#9673A6"
+obs_c = "#6C8EBF"
+
+
+plot(ode_data[test[1],:], ode_data[test[2],:],
+    label = "", ylim = (-1.7,1.7), xlim = (-1.7,1.7) ,xticks= [-1.0,1], yticks= [-1,1], size=(500,500), margin=5Plots.mm,
+    xlab = species[test[1]], ylab = species[test[2]], grid = "off",framestyle = :box,
+    color = obs_c)
+scatter!(ode_data[test[1],:], ode_data[test[2],:], label = "", color = obs_c)
+savefig("paper/simple/Obs.pdf")
+
+
+
+plot(ode_data[test[1],:], ode_data[test[2],:],
+    label = "", ylim = (-1.7,1.7), xlim = (-1.7,1.7) ,xticks= [-1.0,1], yticks= [-1,1], size=(500,500), margin=5Plots.mm,
+    xlab = species[test[1]], ylab = species[test[2]], grid = "off", framestyle = :box,
+    color = obs_c)
+scatter!(ode_data[test[1],:], ode_data[test[2],:], label = "", color = obs_c)
+plot!(esti[test[1],:], esti[test[2],:], label = "", color = est_c)
+scatter!(esti[test[1],:], esti[test[2],:], label = "", color = est_c)
+plot!(Flux.data(pred[test[1],:]), Flux.data(pred[test[2],:]), color = pred_col_c, label = "")
+scatter!(Flux.data(pred[test[1],:]), Flux.data(pred[test[2],:]), label = "", color = pred_col_c)
+savefig("paper/simple/Obs_Esti_Pred.pdf")
+
+
 
 using JLD
-JLD.save("paper/simple/col/losses.jld", "col_losses", sa.losses)
-JLD.save("paper/simple/col/times.jld", "col_times", sa.times)
+#JLD.save("paper/simple/col/losses.jld", "col_losses", sa.losses)
+#JLD.save("paper/simple/col/times.jld", "col_times", sa.times)
 
 # scatter(t, ode_data[1,:], label = "data", grid = "off")
 # scatter!(t, ode_data[2,:], label = "data")
 # plot!(t, Flux.data(pred[1,:]), label = "prediction")
 # plot!(t, Flux.data(pred[2,:]), label = "prediction")
 # header = string("col losses: ", sa.times[end] - sa.times[1])
-plot(range(1,stop=length(sa.l2s)),sa.l2s,label = "l2s", grid = "off")
+# plot(range(1,stop=length(sa.l2s)),sa.l2s,label = "l2s", grid = "off")
 
-selection = range(7,step = 10, stop =800)
-plot(range(1,stop=length(sa_l2.losses))[selection],color = "blue",log.(sa_l2.losses)[selection],width  =2, label ="Loss 1",  grid = "off")
-plot!(range(1,stop=length(sa.losses))[selection],color = "orange",log.(sa.losses)[selection],width  =2, label ="Loss 2", xlab = "Training epoch", ylab= "Log(Loss)", grid = "off")
-vline!([51,251,401,551,751], linewidth = 2,color = "purple", label = "Selection")
+labels = [ "Loss 1", "Loss 2", "Delta"]
+labels = [ "", "", ""]
 
-savefig("paper/simple/selection/loss.pdf")
+#Plots.scalefontsizes(0.8)
+selection = range(1,step = 10, stop =800)
+pl_1_x=range(1,stop=length(sa_l2.losses))[selection]
+pl_1_y=log.(sa_l2.losses)[selection]
+pl_2_x=range(1,stop=length(sa.losses))[selection]
+pl_2_y= log.(sa.losses)[selection]
+plot(pl_1_x,pl_1_y, color = pred_l2_c, margin=5Plots.mm, width =2, label =labels[1],  grid = "off")
+scatter!([pl_1_x[1],pl_1_x[end]],[pl_1_y[1],pl_1_y[end]], color = pred_l2_c, margin=5Plots.mm, width  =2, label ="",  grid = "off")
+plot!(pl_2_x, pl_2_y, color = pred_col_c, width=2, label = labels[2], xlab = "Training epoch", ylab= "Log(Loss)", grid = "off")
+scatter!([pl_2_x[1],pl_2_x[end]],[pl_2_y[1],pl_2_y[end]], color = pred_col_c, margin=5Plots.mm, width  =2, label ="",  grid = "off")
+plot!(range(1,step = 50,stop=800), linestyle = :dash, log.(sa.l2s[range(1,step = 50,stop=800)]),color = pred_col_c, width = 2, label = labels[3], grid = "off")
+vline!([51,251,401,551,751], linewidth = 2,color = "brown", label = "")
+savefig("paper/simple/selection/loss_noe_legend.pdf") #plotting every 10th for visu
+
+
+t1 = sa_l2.times-sa_l2.times[1]
+t2 = sa.times- sa.times[1]
+t2_end = t2[end]
+t3 =  t2[range(1,step = 50,stop=800)]
+s_t1 = t1[selection]
+s_t2 = t2[selection]
+a = []
+for tt in s_t1
+    w= round(Millisecond(tt), Second)
+    push!(a,w)
+end
+b = []
+for tt in s_t2
+    w= round(Millisecond(tt), Second)
+    push!(b,w)
+end
+c = []
+for tt in t3
+    w= round(Millisecond(tt), Second)
+    push!(c,w)
+end
+cc=string(b[end])[1:3]
+end_t= parse(Float64,cc)
+end_t
+plot(a, size =(200, 400), color = pred_l2_c, xlim = (-5,end_t+10), xticks=([0,end_t],["0",string(end_t)]), log.(sa_l2.losses)[selection], margin=2Plots.mm, width =2, label="",  grid="off")
+plot!(b, color = pred_col_c, log.(sa.losses)[selection], width=2, label="", xlab="Time [Sec]", ylab="Log(Loss)", grid="off")
+plot!(c, log.(sa.l2s[range(1,step = 50,stop=800)]), linestyle =:dash, color = pred_col_c, label="")
+scatter!([b[1],b[end]],[log.(sa.losses)[1],log.(sa.losses)[end]], color = pred_col_c, label ="")
+scatter!([a[1]],[log.(sa_l2.losses)[1]], color = pred_l2_c, label ="")
+savefig("paper/simple/selection/timezoom.pdf")
