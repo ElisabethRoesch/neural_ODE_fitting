@@ -72,8 +72,8 @@ savefig(string("paper/simple/L2/", sa_l2.count_epochs,"te_fit_in_statespace.pdf"
 @save string("paper/simple/L2/", sa_l2.count_epochs,"te_dudt.bson") dudt
 
 using JLD
-JLD.save("paper/simple/L2/losses.jld", "l2_losses", saver_l2.losses)
-JLD.save("paper/simple/L2/times.jld", "l2_times", saver_l2.times)
+JLD.save("paper/simple/L2/savelosses.jld", "sal2_losses", sa_l2.losses)
+JLD.save("paper/simple/L2/savetimes.jld", "l2_times", sa_l2.times)
 
 #save("data.jld", "data", r)
 #load("data.jld")["data"]

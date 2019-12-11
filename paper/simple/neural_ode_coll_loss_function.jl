@@ -123,8 +123,9 @@ savefig("paper/simple/Obs_Esti_Pred.pdf")
 
 
 using JLD
-#JLD.save("paper/simple/col/losses.jld", "col_losses", sa.losses)
-#JLD.save("paper/simple/col/times.jld", "col_times", sa.times)
+JLD.save("paper/simple/col/savelosses.jld", "col_losses", sa.losses)
+JLD.save("paper/simple/col/savetimes.jld", "col_times", sa.times)
+JLD.save("paper/simple/col/savel2s.jld", "col_l2s", sa.l2s)
 
 # scatter(t, ode_data[1,:], label = "data", grid = "off")
 # scatter!(t, ode_data[2,:], label = "data")
@@ -148,7 +149,7 @@ plot!(pl_2_x, pl_2_y, color = pred_col_c, width=2, label = labels[2], xlab = "Tr
 scatter!([pl_2_x[1],pl_2_x[end]],[pl_2_y[1],pl_2_y[end]], color = pred_col_c, margin=5Plots.mm, width  =2, label ="",  grid = "off")
 plot!(range(1,step = 50,stop=800), linestyle = :dash, log.(sa.l2s[range(1,step = 50,stop=800)]),color = pred_col_c, width = 2, label = labels[3], grid = "off")
 vline!([51,251,401,551,751], linewidth = 2,color = "brown", label = "")
-savefig("paper/simple/selection/loss_noe_legend.pdf") #plotting every 10th for visu
+savefig("paper/simple/selection/loss_noe_legend.jpg") #plotting every 10th for visu
 
 
 t1 = sa_l2.times-sa_l2.times[1]
@@ -175,9 +176,10 @@ end
 cc=string(b[end])[1:3]
 end_t= parse(Float64,cc)
 end_t
-plot(a, size =(200, 400), color = pred_l2_c, xlim = (-5,end_t+10), xticks=([0,end_t],["0",string(end_t)]), log.(sa_l2.losses)[selection], margin=2Plots.mm, width =2, label="",  grid="off")
+Plots.scalefontsizes(0.8)
+plot(a, size =(200, 400), color = pred_l2_c, xlim = (-5,end_t+10), xticks=([0,end_t],["0",string(end_t)]), log.(sa_l2.losses)[selection], margin=5Plots.mm, width =2, label="",  grid="off")
 plot!(b, color = pred_col_c, log.(sa.losses)[selection], width=2, label="", xlab="Time [Sec]", ylab="Log(Loss)", grid="off")
 plot!(c, log.(sa.l2s[range(1,step = 50,stop=800)]), linestyle =:dash, color = pred_col_c, label="")
 scatter!([b[1],b[end]],[log.(sa.losses)[1],log.(sa.losses)[end]], color = pred_col_c, label ="")
 scatter!([a[1]],[log.(sa_l2.losses)[1]], color = pred_l2_c, label ="")
-savefig("paper/simple/selection/timezoom.pdf")
+savefig("paper/simple/selection/timezoomt.png")
