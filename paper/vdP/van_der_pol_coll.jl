@@ -2,7 +2,7 @@
 using  Plots, Optim, Dates, DiffEqParamEstim, Flux, DiffEqFlux, OrdinaryDiffEq
 
 u0 = Float32[2.; 0.]
-datasize = 100
+datasize = 500
 tspan = (0.0f0, 20.f0)
 t = range(tspan[1], tspan[2], length = datasize)
 function trueODEfunc(du, u, p, t)
@@ -53,14 +53,14 @@ end
 # tanh or sin
 # Building a neural ODE
 # Derivative is modeled by a neural net. Chain concatinates the functions ode function and two dense layers.
-dudt = Chain(Dense(2,50,tanh),
-        Dense(50,50,tanh),
-        Dense(50,50,tanh),
-        Dense(50,50,tanh),
-        Dense(50,50,tanh),
-        Dense(50,50,tanh),
-        Dense(50,50,tanh),
-        Dense(50,2))
+dudt = Chain(Dense(2,100,sin),
+        Dense(100,100,sin),
+        Dense(100,100,sin),
+        Dense(100,100,sin),
+        Dense(100,100,sin),
+        Dense(100,100,sin),
+        Dense(100,100,sin),
+        Dense(100,2))
 # Parameters of the model which are to be learnt. They are: W1 (2x50), b1 (50), W2 (50x2), b2 (2)
 ps = Flux.params(dudt)
 # Getting loss function from two stage collocation function
@@ -72,7 +72,7 @@ function node_two_stage_function(model, x, tspan, saveat, ode_data,
 end
 loss_n_ode = node_two_stage_function(dudt, u0, tspan, t, ode_data, Tsit5(), reltol=1e-7, abstol=1e-9)
 #  loss function
-two_stage_loss_fct()=loss_n_ode.cost_function(ps)
+two_stage_loss_fct() = loss_n_ode.cost_function(ps)
 # Defining anonymous function for the neural ODE with the model. in: u0, out: solution with current params.
 n_ode = x->neural_ode(dudt, x, tspan, Tsit5(), saveat=t, reltol=1e-7, abstol=1e-9)
 n_epochs = 1500
@@ -101,8 +101,8 @@ cb1 = function ()
         m = 1
         for a in as
             for b in bs
-                cords[m]=(a,b)
-                m=m+1
+                cords[m] = (a,b)
+                m = m+1
             end
         end
         grads = []
@@ -112,7 +112,7 @@ cb1 = function ()
             tuple = (grad[1], grad[2])
             push!(grads, tuple)
         end
-        quiv_plt=quiver(cords, quiver=grads, grid = :off,framestyle = :box)
+        quiv_plt=quiver(cords, size = (500,500), quiver=grads, grid = :off,framestyle = :box)
         plot!(ode_data[test[1],:], ode_data[test[2],:], ylim = (-3,3), xlim = (-3,3), linewidth =4, color = "red",xlab = species[test[1]], ylab = species[test[2]], label = "", legend=:bottomright, grid = "off")
         display(quiv_plt)
         #@save string("paper/vdP/train/", sa.count_epochs,"te_dudt.bson") dudt
@@ -179,7 +179,7 @@ esti =loss_n_ode.estimated_solution
 #     tuple = (grad[1], grad[2])
 #     push!(grads, tuple)
 # end
-# quiv_plt=quiver(cords, quiver=grads, grid = :off,framestyle = :box)
-# plot!(ode_data[test[1],:], ode_data[test[2],:], ylim = (-3,3), xlim = (-3,3), linewidth =4, color = "red",xlab = species[test[1]], ylab = species[test[2]], label = "", legend=:bottomright, grid = "off")
-# display(quiv_plt)
-#savefig("paper/vdP/observation_quiver.pdf")
+quiv_plt=quiver(cords, quiver=grads,  size = (500,500), grid = :off,framestyle = :box)
+plot!(ode_data[test[1],:], ode_data[test[2],:], ylim = (-3,3), xlim = (-3,3), linewidth =4, color = "red",xlab = species[test[1]], ylab = species[test[2]], label = "", legend=:bottomright, grid = "off",framestyle = :box)
+display(quiv_plt)
+savefig("paper/vdP/observation_quiver.pdf")
