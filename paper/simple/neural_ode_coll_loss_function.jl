@@ -22,8 +22,8 @@ function update_saver(saver, loss_i, l2_i, time_i)
     saver.times[epoch_i] = time_i
 end
 u0 = Float32[1.5; 0.]
-datasize = 100
-tspan = (0.0f0, 3.f0)
+datasize = 200
+tspan = (0.0f0, 100.f0)
 t = range(tspan[1], tspan[2], length = datasize)
 function trueODEfunc(du, u, p, t)
   true_A = [-0.1 2.0; -2.0 -0.1]
@@ -77,6 +77,17 @@ cb1 = function ()
         display(a)
         #savefig(string("paper/simple/col/", sa.count_epochs,"te_fit_in_statespace.pdf"))
         #@save string("paper/simple/col/", sa.count_epochs,"te_dudt.bson") dudt
+        grads = []
+        for i in cords
+            cord = [i[1], i[2]]
+            grad = Flux.data(dudt(cord))
+            tuple = (grad[1], grad[2])
+            push!(grads, tuple)
+        end
+        quiv_plt=quiver(cords, size = (500,500), quiver=grads, grid = :off,framestyle = :box)
+        plot!(ode_data[test[1],:], ode_data[test[2],:], ylim = (-3,3), xlim = (-3,3), linewidth =4, color = "red",xlab = species[test[1]], ylab = species[test[2]], label = "", legend=:bottomright, grid = "off")
+        display(quiv_plt)
+
     else
         update_saver(sa, Tracker.data(two_stage_loss_fct()),0,Dates.Time(Dates.now()))
         # println("\"",Tracker.data(two_stage_loss_fct()),"\" \"",Dates.Time(Dates.now()),"\";")

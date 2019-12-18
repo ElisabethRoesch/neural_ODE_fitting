@@ -2,8 +2,8 @@
 using  Plots, Optim, Dates, DiffEqParamEstim, Flux, DiffEqFlux, OrdinaryDiffEq
 
 u0 = Float32[2.; 0.]
-datasize = 500
-tspan = (0.0f0, 20.f0)
+datasize = 100
+tspan = (0.0f0, 7.f0)
 t = range(tspan[1], tspan[2], length = datasize)
 function trueODEfunc(du, u, p, t)
   du[1] = u[2]
@@ -53,14 +53,11 @@ end
 # tanh or sin
 # Building a neural ODE
 # Derivative is modeled by a neural net. Chain concatinates the functions ode function and two dense layers.
-dudt = Chain(Dense(2,100,sin),
-        Dense(100,100,sin),
-        Dense(100,100,sin),
-        Dense(100,100,sin),
-        Dense(100,100,sin),
-        Dense(100,100,sin),
-        Dense(100,100,sin),
-        Dense(100,2))
+dudt = Chain(Dense(2,50,tanh),
+        Dense(50,50,tanh),
+        Dense(50,50,tanh),
+        Dense(50,50,tanh),
+        Dense(50,2))
 # Parameters of the model which are to be learnt. They are: W1 (2x50), b1 (50), W2 (50x2), b2 (2)
 ps = Flux.params(dudt)
 # Getting loss function from two stage collocation function
@@ -75,7 +72,7 @@ loss_n_ode = node_two_stage_function(dudt, u0, tspan, t, ode_data, Tsit5(), relt
 two_stage_loss_fct() = loss_n_ode.cost_function(ps)
 # Defining anonymous function for the neural ODE with the model. in: u0, out: solution with current params.
 n_ode = x->neural_ode(dudt, x, tspan, Tsit5(), saveat=t, reltol=1e-7, abstol=1e-9)
-n_epochs = 1500
+n_epochs = 800
 verify = 50 # for <verify>th epoch the L2 is calculated
 data1 = Iterators.repeated((), n_epochs)
 opt1 = Descent(0.001)
@@ -112,11 +109,17 @@ cb1 = function ()
             tuple = (grad[1], grad[2])
             push!(grads, tuple)
         end
-        quiv_plt=quiver(cords, size = (500,500), quiver=grads, grid = :off,framestyle = :box)
-        plot!(ode_data[test[1],:], ode_data[test[2],:], ylim = (-3,3), xlim = (-3,3), linewidth =4, color = "red",xlab = species[test[1]], ylab = species[test[2]], label = "", legend=:bottomright, grid = "off")
-        display(quiv_plt)
-        #@save string("paper/vdP/train/", sa.count_epochs,"te_dudt.bson") dudt
-        savefig(string("paper/vdP/train/", sa.count_epochs, "_quiver.pdf"))
+        #quiv_plt=quiver(cords, size = (500,500), quiver=grads, grid = :off,framestyle = :box)
+        #plot!(ode_data[test[1],:], ode_data[test[2],:], ylim = (-3,3), xlim = (-3,3), linewidth =4, color = "red",xlab = species[test[1]], ylab = species[test[2]], label = "", legend=:bottomright, grid = "off")
+        #display(quiv_plt)
+        pred = n_ode(u0)
+        a = plot(ode_data[test[1],:], ode_data[test[2],:], color = "green",xlab = species[test[1]], ylab = species[test[2]], label = "", legend=:bottomright, grid = "off")
+        scatter!(ode_data[test[1],:], ode_data[test[2],:], label = "A", color = "green")
+        plot!(Flux.data(pred[test[1],:]), Flux.data(pred[test[2],:]), color = "red", xlab = species[test[1]], ylab = species[test[2]], label = "", grid = "off")
+        scatter!(Flux.data(pred[test[1],:]), Flux.data(pred[test[2],:]), label = "B", color = "red")
+        display(a)
+        #@save string("paper/vdP/", sa.count_epochs,"te_dudt.bson") dudt
+        #savefig(string("paper/vdP/", sa.count_epochs, "_statespace.pdf"))
     else
         update_saver(sa, Tracker.data(two_stage_loss_fct()),0,Dates.Time(Dates.now()))
         # println("\"",Tracker.data(two_stage_loss_fct()),"\" \"",Dates.Time(Dates.now()),"\";")
@@ -179,7 +182,10 @@ esti =loss_n_ode.estimated_solution
 #     tuple = (grad[1], grad[2])
 #     push!(grads, tuple)
 # end
-quiv_plt=quiver(cords, quiver=grads,  size = (500,500), grid = :off,framestyle = :box)
-plot!(ode_data[test[1],:], ode_data[test[2],:], ylim = (-3,3), xlim = (-3,3), linewidth =4, color = "red",xlab = species[test[1]], ylab = species[test[2]], label = "", legend=:bottomright, grid = "off",framestyle = :box)
-display(quiv_plt)
-savefig("paper/vdP/observation_quiver.pdf")
+
+
+
+# quiv_plt=quiver(cords, quiver=grads,  size = (500,500), grid = :off,framestyle = :box)
+# plot!(ode_data[test[1],:], ode_data[test[2],:], ylim = (-3,3), xlim = (-3,3), linewidth =4, color = "red",xlab = species[test[1]], ylab = species[test[2]], label = "", legend=:bottomright, grid = "off",framestyle = :box)
+# display(quiv_plt)
+# savefig("paper/vdP/observation_quiver.pdf")
