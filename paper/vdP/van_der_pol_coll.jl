@@ -49,12 +49,7 @@ function update_saver(saver, loss_i, l2_i, time_i)
     saver.l2s[epoch_i] = l2_i
     saver.times[epoch_i] = time_i
 end
-
-# tanh or sin
-# Building a neural ODE
-# Derivative is modeled by a neural net. Chain concatinates the functions ode function and two dense layers.
 dudt = Chain(Dense(2,50,tanh),
-        Dense(50,50,tanh),
         Dense(50,50,tanh),
         Dense(50,50,tanh),
         Dense(50,2))
@@ -72,10 +67,10 @@ loss_n_ode = node_two_stage_function(dudt, u0, tspan, t, ode_data, Tsit5(), relt
 two_stage_loss_fct() = loss_n_ode.cost_function(ps)
 # Defining anonymous function for the neural ODE with the model. in: u0, out: solution with current params.
 n_ode = x->neural_ode(dudt, x, tspan, Tsit5(), saveat=t, reltol=1e-7, abstol=1e-9)
-n_epochs = 800
+n_epochs = 251
 verify = 50 # for <verify>th epoch the L2 is calculated
 data1 = Iterators.repeated((), n_epochs)
-opt1 = Descent(0.001)
+opt1 = Descent(0.0001)
 sa = saver(n_epochs)
 L2_loss_fct() = sum(abs2,ode_data .- n_ode(u0))
 # Callback function to observe two stage training.
@@ -92,23 +87,23 @@ cb1 = function ()
         #plot!(Flux.data(pred[test[1],:]), Flux.data(pred[test[2],:]), color = "red", xlab = species[test[1]], ylab = species[test[2]], label = "", grid = "off")
         #scatter!(Flux.data(pred[test[1],:]), Flux.data(pred[test[2],:]), label = "B", color = "red")
         #display(a)
-        as = range(-3, step = 0.2, stop = 3)
-        bs = range(-3, step = 0.2, stop = 3)
-        cords = Array{Tuple{Real,Float64},1}(undef,length(as)*length(bs))
-        m = 1
-        for a in as
-            for b in bs
-                cords[m] = (a,b)
-                m = m+1
-            end
-        end
-        grads = []
-        for i in cords
-            cord = [i[1], i[2]]
-            grad = Flux.data(dudt(cord))
-            tuple = (grad[1], grad[2])
-            push!(grads, tuple)
-        end
+        # as = range(-3, step = 0.2, stop = 3)
+        # bs = range(-3, step = 0.2, stop = 3)
+        # cords = Array{Tuple{Real,Float64},1}(undef,length(as)*length(bs))
+        # m = 1
+        # for a in as
+        #     for b in bs
+        #         cords[m] = (a,b)
+        #         m = m+1
+        #     end
+        # end
+        # grads = []
+        # for i in cords
+        #     cord = [i[1], i[2]]
+        #     grad = Flux.data(dudt(cord))
+        #     tuple = (grad[1], grad[2])
+        #     push!(grads, tuple)
+        # end
         #quiv_plt=quiver(cords, size = (500,500), quiver=grads, grid = :off,framestyle = :box)
         #plot!(ode_data[test[1],:], ode_data[test[2],:], ylim = (-3,3), xlim = (-3,3), linewidth =4, color = "red",xlab = species[test[1]], ylab = species[test[2]], label = "", legend=:bottomright, grid = "off")
         #display(quiv_plt)
@@ -118,7 +113,7 @@ cb1 = function ()
         plot!(Flux.data(pred[test[1],:]), Flux.data(pred[test[2],:]), color = "red", xlab = species[test[1]], ylab = species[test[2]], label = "", grid = "off")
         scatter!(Flux.data(pred[test[1],:]), Flux.data(pred[test[2],:]), label = "B", color = "red")
         display(a)
-        #@save string("paper/vdP/", sa.count_epochs,"te_dudt.bson") dudt
+        @save string("paper/vdP/", sa.count_epochs,"te_dudt.bson") dudt
         #savefig(string("paper/vdP/", sa.count_epochs, "_statespace.pdf"))
     else
         update_saver(sa, Tracker.data(two_stage_loss_fct()),0,Dates.Time(Dates.now()))
@@ -153,6 +148,12 @@ pred_col_c = "#82B366"
 pred_l2_c = "#9673A6"
 obs_c = "#6C8EBF"
 esti =loss_n_ode.estimated_solution
+
+
+using JLD
+JLD.save("paper/vdP/col/savelosses.jld", "losses", sa.losses)
+JLD.save("paper/vdP/col/savetimes.jld", "times", sa.times)
+JLD.save("paper/vdP/col/savel2s.jld", "times", sa.l2s)
 
 # plot(ode_data[test[1],:], ode_data[test[2],:],
 #     label = "",

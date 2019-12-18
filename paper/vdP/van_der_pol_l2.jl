@@ -19,7 +19,7 @@ function update_saver(saver_l2, loss_i, time_i)
 end
 
 u0 = Float32[2.; 0.]
-datasize = 50
+datasize = 100
 tspan = (0.0f0, 7.f0)
 t = range(tspan[1], tspan[2], length = datasize)
 function trueODEfunc(du, u, p, t)
@@ -52,7 +52,7 @@ dudt = Chain(Dense(2,50,tanh),
 
 ps = Flux.params(dudt)
 n_ode = x->neural_ode(dudt, x, tspan, Tsit5(), saveat = t, reltol = 1e-7, abstol = 1e-9)
-n_epochs = 250
+n_epochs = 251
 verify = 50
 test = [1,2]
 sa_l2 = saver_l2(n_epochs)
@@ -61,7 +61,7 @@ cb = function ()
     sa_l2.count_epochs = sa_l2.count_epochs +  1
     xx=Tracker.data(L2_loss_fct())
     update_saver(sa_l2,xx , Dates.Time(Dates.now()))
-    println("\"", xx, "\" \"", Dates.Time(Dates.now()), "\";")
+    println("Epoch: ",sa_l2.count_epochs,"\tL2 loss: ", round(xx,digits=3))
     if mod(sa_l2.count_epochs-1, verify)==0
         pred = n_ode(u0)
         a = plot(ode_data[test[1],:], ode_data[test[2],:], color = "green",xlab = species[test[1]], ylab = species[test[2]], label = "", legend=:bottomright, grid = "off")
@@ -70,9 +70,10 @@ cb = function ()
         scatter!(Flux.data(pred[test[1],:]), Flux.data(pred[test[2],:]), label = "B", color = "red")
         display(a)
         #savefig(string("paper/vdP/L2/", sa_l2.count_epochs,"te_fit_in_statespace.pdf"))
-        #@save string("paper/vdP/L2/", sa_l2.count_epochs,"te_dudt.bson") dudt
+        @save string("paper/vdP/L2/", sa_l2.count_epochs,"te_dudt.bson") dudt
     end
 end
+
 
 test=[1,2]
 species = ["X","Y"]
@@ -83,9 +84,13 @@ species = ["X","Y"]
 # scatter!(Flux.data(pred[test[1],:]), Flux.data(pred[test[2],:]), label = "B", color = "red")
 
 data = Iterators.repeated((), n_epochs)
-opt1 = Descent(0.001)
+opt1 = Descent(0.0001)
 @time Flux.train!(L2_loss_fct, ps, data, opt1, cb = cb)
+using JLD
+JLD.save("paper/vdP/L2/savelosses.jld", "losses", sa_l2.losses)
+JLD.save("paper/vdP/L2/savetimes.jld", "times", sa_l2.times)
 
+pred = n_ode(u0)
 scatter(t, ode_data[1,:], label="", color ="red", grid = "off",framestyle = :box)
 scatter!(t, ode_data[2,:], label="", color ="blue")
 plot!(t, ode_data[1,:], label="", color ="red")
@@ -96,7 +101,7 @@ scatter!(t, Flux.data(pred[test[2],:]), label="", color ="brown")
 plot!(t,Flux.data(pred[test[1],:]), label="", color ="green")
 plot!(t, Flux.data(pred[test[2],:]), label="", color ="brown")
 
-
+a=2
 # plot(ode_data[test[1],:], ode_data[test[2],:],
 #     label = "",
 #     xlab = species[test[1]], ylab = species[test[2]], grid = "off", framestyle = :box,
