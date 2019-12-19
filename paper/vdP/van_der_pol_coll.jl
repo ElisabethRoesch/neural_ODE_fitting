@@ -2,7 +2,7 @@
 using  Plots, Optim, Dates, DiffEqParamEstim, Flux, DiffEqFlux, OrdinaryDiffEq
 using BSON: @save
 u0 = Float32[2.; 0.]
-datasize = 100
+datasize = 6
 tspan = (0.0f0, 7.f0)
 t = range(tspan[1], tspan[2], length = datasize)
 function trueODEfunc(du, u, p, t)

@@ -15,11 +15,11 @@ end
 
 prob = ODEProblem(trueODEfunc, u0, tspan)
 ode_data = Array(solve(prob,Tsit5(),saveat=t))
-key_list = [1, 51, 101, 151, 201, 251, 301, 351]
+key_list = [1, 51, 101, 151, 201, 251, 301, 851]
 col = pred_l2_c
-col = pred_col_c
+#col = pred_col_c
 
-foldername = "col"
+foldername = "L2"
 #Plots.scalefontsizes(0.8)
 for key_t in key_list
     @load string("paper/vdP/",foldername,"/", key_t, "te_dudt.bson") dudt
