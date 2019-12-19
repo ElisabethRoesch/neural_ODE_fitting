@@ -1,6 +1,6 @@
 
 using  Plots, Optim, Dates, DiffEqParamEstim, Flux, DiffEqFlux, OrdinaryDiffEq
-
+using BSON: @save
 u0 = Float32[2.; 0.]
 datasize = 100
 tspan = (0.0f0, 7.f0)
@@ -67,7 +67,7 @@ loss_n_ode = node_two_stage_function(dudt, u0, tspan, t, ode_data, Tsit5(), relt
 two_stage_loss_fct() = loss_n_ode.cost_function(ps)
 # Defining anonymous function for the neural ODE with the model. in: u0, out: solution with current params.
 n_ode = x->neural_ode(dudt, x, tspan, Tsit5(), saveat=t, reltol=1e-7, abstol=1e-9)
-n_epochs = 251
+n_epochs = 851
 verify = 50 # for <verify>th epoch the L2 is calculated
 data1 = Iterators.repeated((), n_epochs)
 opt1 = Descent(0.0001)
@@ -113,7 +113,7 @@ cb1 = function ()
         plot!(Flux.data(pred[test[1],:]), Flux.data(pred[test[2],:]), color = "red", xlab = species[test[1]], ylab = species[test[2]], label = "", grid = "off")
         scatter!(Flux.data(pred[test[1],:]), Flux.data(pred[test[2],:]), label = "B", color = "red")
         display(a)
-        @save string("paper/vdP/", sa.count_epochs,"te_dudt.bson") dudt
+        @save string("paper/vdP/col/", sa.count_epochs,"te_dudt.bson") dudt
         #savefig(string("paper/vdP/", sa.count_epochs, "_statespace.pdf"))
     else
         update_saver(sa, Tracker.data(two_stage_loss_fct()),0,Dates.Time(Dates.now()))

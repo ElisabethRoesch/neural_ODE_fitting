@@ -52,7 +52,7 @@ dudt = Chain(Dense(2,50,tanh),
 
 ps = Flux.params(dudt)
 n_ode = x->neural_ode(dudt, x, tspan, Tsit5(), saveat = t, reltol = 1e-7, abstol = 1e-9)
-n_epochs = 251
+n_epochs = 851
 verify = 50
 test = [1,2]
 sa_l2 = saver_l2(n_epochs)
