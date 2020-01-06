@@ -2,8 +2,8 @@
 using  Plots, Optim, Dates, DiffEqParamEstim, Flux, DiffEqFlux, OrdinaryDiffEq
 using BSON: @save
 u0 = Float32[2.; 0.]
-datasize = 100
-tspan = (0.0f0, 6.f0)
+datasize = 200
+tspan = (0.0f0, 14.f0)
 t = range(tspan[1], tspan[2], length = datasize)
 function trueODEfunc(du, u, p, t)
   du[1] = u[2]
@@ -67,10 +67,10 @@ loss_n_ode = node_two_stage_function(dudt, u0, tspan, t, ode_data, Tsit5(), relt
 two_stage_loss_fct() = loss_n_ode.cost_function(ps)
 # Defining anonymous function for the neural ODE with the model. in: u0, out: solution with current params.
 n_ode = x->neural_ode(dudt, x, tspan, Tsit5(), saveat=t, reltol=1e-7, abstol=1e-9)
-n_epochs = 801
+n_epochs = 3501
 verify = 50 # for <verify>th epoch the L2 is calculated
 data1 = Iterators.repeated((), n_epochs)
-opt1 = Descent(0.0001)
+opt1 = Descent(0.00001)
 sa = saver(n_epochs)
 L2_loss_fct() = sum(abs2,ode_data .- n_ode(u0))
 # Callback function to observe two stage training.
@@ -158,13 +158,13 @@ JLD.save("paper/vdP/col/savelosses.jld", "losses", sa.losses)
 JLD.save("paper/vdP/col/savetimes.jld", "times", sa.times)
 JLD.save("paper/vdP/col/savel2s.jld", "times", sa.l2s)
 
-# plot(ode_data[test[1],:], ode_data[test[2],:],
-#     label = "",
-#     xlab = species[test[1]], ylab = species[test[2]], grid = "off", framestyle = :box,
-#     color = obs_c)
-# scatter!(ode_data[test[1],:], ode_data[test[2],:], label = "", color = obs_c)
-# plot!(esti[test[1],:], esti[test[2],:], label = "", color = est_c)
-# scatter!(esti[test[1],:], esti[test[2],:], label = "", color = est_c)
+plot(ode_data[test[1],:], ode_data[test[2],:],
+    label = "",
+    xlab = species[test[1]], ylab = species[test[2]], grid = "off", framestyle = :box,
+    color = obs_c)
+scatter!(ode_data[test[1],:], ode_data[test[2],:], label = "", color = obs_c)
+plot!(esti[test[1],:], esti[test[2],:], label = "", color = est_c)
+scatter!(esti[test[1],:], esti[test[2],:], label = "", color = est_c)
 
 
 

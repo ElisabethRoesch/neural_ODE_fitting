@@ -4,8 +4,8 @@ pred_col_c = "#82B366"
 pred_l2_c = "#C698DB"
 obs_c = "#696969"
 u0 = Float32[2.; 0.]
-datasize = 100
-tspan = (0.0f0, 7.f0)
+datasize = 200
+tspan = (0.0f0, 14.f0)
 t = range(tspan[1], tspan[2], length = datasize)
 function trueODEfunc(du, u, p, t)
   du[1] = u[2]
@@ -15,7 +15,7 @@ end
 
 prob = ODEProblem(trueODEfunc, u0, tspan)
 ode_data = Array(solve(prob,Tsit5(),saveat=t))
-key_list = Array(range(1,step=50,stop=801))
+key_list = Array(range(1,step=50,stop=n_epochs))
 
 col = pred_l2_c
 col = pred_col_c
