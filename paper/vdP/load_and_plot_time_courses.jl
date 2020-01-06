@@ -23,7 +23,7 @@ col = pred_col_c
 foldername = "col"
 #Plots.scalefontsizes(0.8)
 for key_t in key_list
-    @load string("paper/vdP/",foldername,"/", key_t, "te_dudt.bson") dudt
+    @load string("paper/vdP/", foldername, "/", key_t, "te_dudt.bson") dudt
     n_ode = x->neural_ode(dudt, x, tspan, Tsit5(), saveat=t, reltol=1e-7, abstol=1e-9)
     pred = n_ode(u0)
     a= scatter(t, ode_data[1,:], label="", color =obs_c, grid = "off",framestyle = :box)
@@ -35,5 +35,5 @@ for key_t in key_list
     plot!(t,Flux.data(pred[test[1],:]), label="", color =col)
     plot!(t, Flux.data(pred[test[2],:]), label="", color =col)
     display(a)
-    savefig(string("paper/vdP/",foldername,"/plots/time_course_",key_t,"te_fit_selected.pdf"))
+    savefig(string("paper/vdP/", foldername, "/plots/time_course_", key_t, "te_fit_selected.pdf"))
 end
