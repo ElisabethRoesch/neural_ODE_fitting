@@ -4,8 +4,8 @@ pred_col_c = "#82B366"
 pred_l2_c = "#C698DB"
 obs_c = "#696969"
 u0 = Float32[2.; 0.]
-datasize = 6
-tspan = (0.0f0, 7.f0)
+datasize = 100
+tspan = (0.0f0, 6.f0)
 t = range(tspan[1], tspan[2], length = datasize)
 function trueODEfunc(du, u, p, t)
   du[1] = u[2]
@@ -15,11 +15,12 @@ end
 
 prob = ODEProblem(trueODEfunc, u0, tspan)
 ode_data = Array(solve(prob,Tsit5(),saveat=t))
-key_list = [1, 51, 101, 151, 201, 251, 301, 851]
-col = pred_l2_c
-#col = pred_col_c
+key_list = Array(range(1,step=50,stop=801))
 
-foldername = "L2"
+col = pred_l2_c
+col = pred_col_c
+
+foldername = "col"
 #Plots.scalefontsizes(0.8)
 for key_t in key_list
     @load string("paper/vdP/",foldername,"/", key_t, "te_dudt.bson") dudt
@@ -35,3 +36,7 @@ for key_t in key_list
     display(a)
     savefig(string("paper/vdP/",foldername,"/plots/",key_t,"te_fit_selected.pdf"))
 end
+
+scatter(markerstrokecolor = obs_c, ode_data[1,:], ode_data[2,:], label = "", color = obs_c)
+
+ode_data[1,:]

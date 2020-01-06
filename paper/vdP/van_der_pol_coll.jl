@@ -2,8 +2,8 @@
 using  Plots, Optim, Dates, DiffEqParamEstim, Flux, DiffEqFlux, OrdinaryDiffEq
 using BSON: @save
 u0 = Float32[2.; 0.]
-datasize = 250
-tspan = (0.0f0, 7.f0)
+datasize = 100
+tspan = (0.0f0, 6.f0)
 t = range(tspan[1], tspan[2], length = datasize)
 function trueODEfunc(du, u, p, t)
   du[1] = u[2]
@@ -49,10 +49,9 @@ function update_saver(saver, loss_i, l2_i, time_i)
     saver.l2s[epoch_i] = l2_i
     saver.times[epoch_i] = time_i
 end
-dudt = Chain(Dense(2,50,sin),
-        Dense(50,50,sin),
-        Dense(50,50,sin),
-        Dense(50,50,sin),
+dudt = Chain(Dense(2,50,tanh),
+        Dense(50,50,tanh),
+        Dense(50,50,tanh),
         Dense(50,2))
 # Parameters of the model which are to be learnt. They are: W1 (2x50), b1 (50), W2 (50x2), b2 (2)
 ps = Flux.params(dudt)
@@ -109,10 +108,13 @@ cb1 = function ()
         #plot!(ode_data[test[1],:], ode_data[test[2],:], ylim = (-3,3), xlim = (-3,3), linewidth =4, color = "red",xlab = species[test[1]], ylab = species[test[2]], label = "", legend=:bottomright, grid = "off")
         #display(quiv_plt)
         pred = n_ode(u0)
-        a = plot(ode_data[test[1],:], ode_data[test[2],:], color = "green",xlab = species[test[1]], ylab = species[test[2]], label = "", legend=:bottomright, grid = "off")
-        scatter!(ode_data[test[1],:], ode_data[test[2],:], label = "A", color = "green")
-        plot!(Flux.data(pred[test[1],:]), Flux.data(pred[test[2],:]), color = "red", xlab = species[test[1]], ylab = species[test[2]], label = "", grid = "off")
-        scatter!(Flux.data(pred[test[1],:]), Flux.data(pred[test[2],:]), label = "B", color = "red")
+        a = plot(ode_data[1,:], ode_data[2,:],
+            label = "", ylim = (-3,3), xlim = (-3,3) ,xticks= ([-1,1],["",""]), yticks=  ([-1,1],["",""]), size=(500,500), margin=5Plots.mm,
+            xlab = "X",linewidth=3, ylab = "Y", grid = "off", framestyle = :box,
+            color = obs_c,markerstrokecolor = obs_c)
+        scatter!(markerstrokecolor = obs_c, ode_data[1,:], ode_data[2,:], label = "", color = obs_c)
+        plot!(Flux.data(pred[1,:]),linewidth=3, Flux.data(pred[2,:]), color = col, label = "")
+        scatter!(markerstrokecolor = col, Flux.data(pred[1,:]), Flux.data(pred[2,:]), label = "", color = col)
         display(a)
         @save string("paper/vdP/col/", sa.count_epochs,"te_dudt.bson") dudt
         #savefig(string("paper/vdP/", sa.count_epochs, "_statespace.pdf"))
