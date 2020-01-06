@@ -2,7 +2,7 @@
 using  Plots, Optim, Dates, DiffEqParamEstim, Flux, DiffEqFlux, OrdinaryDiffEq
 using BSON: @save
 u0 = Float32[2.; 0.]
-datasize = 50
+datasize = 250
 tspan = (0.0f0, 7.f0)
 t = range(tspan[1], tspan[2], length = datasize)
 function trueODEfunc(du, u, p, t)
@@ -49,9 +49,10 @@ function update_saver(saver, loss_i, l2_i, time_i)
     saver.l2s[epoch_i] = l2_i
     saver.times[epoch_i] = time_i
 end
-dudt = Chain(Dense(2,50,tanh),
-        Dense(50,50,tanh),
-        Dense(50,50,tanh),
+dudt = Chain(Dense(2,50,sin),
+        Dense(50,50,sin),
+        Dense(50,50,sin),
+        Dense(50,50,sin),
         Dense(50,2))
 # Parameters of the model which are to be learnt. They are: W1 (2x50), b1 (50), W2 (50x2), b2 (2)
 ps = Flux.params(dudt)
@@ -67,7 +68,7 @@ loss_n_ode = node_two_stage_function(dudt, u0, tspan, t, ode_data, Tsit5(), relt
 two_stage_loss_fct() = loss_n_ode.cost_function(ps)
 # Defining anonymous function for the neural ODE with the model. in: u0, out: solution with current params.
 n_ode = x->neural_ode(dudt, x, tspan, Tsit5(), saveat=t, reltol=1e-7, abstol=1e-9)
-n_epochs = 351
+n_epochs = 801
 verify = 50 # for <verify>th epoch the L2 is calculated
 data1 = Iterators.repeated((), n_epochs)
 opt1 = Descent(0.0001)
