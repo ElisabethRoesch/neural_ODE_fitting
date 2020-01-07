@@ -11,7 +11,6 @@ function trueODEfunc(du, u, p, t)
   return du
 end
 
-
 prob = ODEProblem(trueODEfunc, u0, tspan)
 ode_data = Array(solve(prob,Tsit5(),saveat=t))
 species1 = "Van der Pol oscillator"
