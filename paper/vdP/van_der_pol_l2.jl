@@ -17,7 +17,6 @@ function update_saver(saver_l2, loss_i, time_i)
     saver_l2.losses[epoch_i] = loss_i
     saver_l2.times[epoch_i] = time_i
 end
-
 u0 = Float32[2.; 0.]
 datasize = 50
 tspan = (0.0f0, 7.f0)
@@ -27,8 +26,6 @@ function trueODEfunc(du, u, p, t)
   du[2] = (1-u[1]^2)*u[2]-u[1]
   return du
 end
-
-
 prob = ODEProblem(trueODEfunc, u0, tspan)
 ode_data = Array(solve(prob,Tsit5(),saveat=t))
 species1 = "Van der Pol oscillator"
