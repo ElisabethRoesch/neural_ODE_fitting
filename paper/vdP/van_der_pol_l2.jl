@@ -18,7 +18,7 @@ function update_saver(saver_l2, loss_i, time_i)
     saver_l2.times[epoch_i] = time_i
 end
 u0 = Float32[2.; 0.]
-datasize = 50
+datasize = 200
 tspan = (0.0f0, 7.f0)
 t = range(tspan[1], tspan[2], length = datasize)
 function trueODEfunc(du, u, p, t)
@@ -49,7 +49,7 @@ dudt = Chain(Dense(2,50,tanh),
 
 ps = Flux.params(dudt)
 n_ode = x->neural_ode(dudt, x, tspan, Tsit5(), saveat = t, reltol = 1e-7, abstol = 1e-9)
-n_epochs = 351
+n_epochs = 3501
 verify = 50
 test = [1,2]
 sa_l2 = saver_l2(n_epochs)

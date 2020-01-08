@@ -166,28 +166,47 @@ scatter!(esti[test[1],:], esti[test[2],:], label = "", color = est_c)
 
 
 
-# as = range(-3, step = 0.2, stop = 3)
-# bs = range(-3, step = 0.2, stop = 3)
-# cords = Array{Tuple{Real,Float64},1}(undef,length(as)*length(bs))
-# m = 1
-# for a in as
-#     for b in bs
-#         cords[m]=(a,b)
-#         global m=m+1
-#     end
-# end
-# grads = []
-# for i in cords
-#     cord = [i[1], i[2]]
-#     #grad = Flux.data(dudt(cord))
-#     grad = trueODEfunc([0.,0.], cord, 1, 1)
-#     tuple = (grad[1], grad[2])
-#     push!(grads, tuple)
-# end
+as = range(-3, step = 0.2, stop = 3)
+bs = range(-3, step = 0.2, stop = 3)
+cords = Array{Tuple{Real,Float64},1}(undef,length(as)*length(bs))
+m = 1
+for a in as
+    for b in bs
+        cords[m]=(a,b)
+        global m=m+1
+    end
+end
+grads = []
+for i in cords
+    cord = [i[1], i[2]]
+    #grad = Flux.data(dudt(cord))
+    grad = trueODEfunc([0.,0.], cord, 1, 1)
+    tuple = (grad[1], grad[2])
+    push!(grads, tuple)
+end
 
 
 
-# quiv_plt=quiver(cords, quiver=grads,  size = (500,500), grid = :off,framestyle = :box)
-# plot!(ode_data[test[1],:], ode_data[test[2],:], ylim = (-3,3), xlim = (-3,3), linewidth =4, color = "red",xlab = species[test[1]], ylab = species[test[2]], label = "", legend=:bottomright, grid = "off",framestyle = :box)
-# display(quiv_plt)
-# savefig("paper/vdP/observation_quiver.pdf")
+quiv_plt=quiver(cords, quiver=grads,  size = (500,500), grid = :off,framestyle = :box)
+plot!(ode_data[test[1],:], ode_data[test[2],:], ylim = (-3,3), xlim = (-3,3), linewidth =4, color = "red",xlab = species[test[1]], ylab = species[test[2]], label = "", legend=:bottomright, grid = "off",framestyle = :box)
+display(quiv_plt)
+savefig("paper/vdP/observation_quiver.pdf")
+
+
+
+labels = [ "Loss 1", "Loss 2", "Delta"]
+labels = [ "", "", ""]
+
+selection = range(1,step = 50, stop =3501)
+selection_snips = Array(range(1,step = 750, stop =3501))
+#pl_1_x=range(1,stop=length(sa_l2.losses))[selection]
+#pl_1_y=log.(sa_l2.losses)[selection]
+pl_2_x=range(1,stop=length(sa.losses))[selection]
+pl_2_y= log.(sa.losses)[selection]
+#plot(pl_1_x,pl_1_y, color = pred_l2_c, margin=5Plots.mm, width =2, label =labels[1],  grid = "off")
+#scatter!([pl_1_x[1],pl_1_x[end]],[pl_1_y[1],pl_1_y[end]], color = pred_l2_c, margin=5Plots.mm, width  =2, label ="",  grid = "off")
+plot(pl_2_x, pl_2_y, color = pred_col_c, width=2, label = labels[2], xlab = "Training epoch", ylab= "Log(Loss)", grid = "off")
+scatter!([pl_2_x[1],pl_2_x[end]],[pl_2_y[1],pl_2_y[end]], color = pred_col_c, margin=5Plots.mm, width  =2, label ="",  grid = "off")
+plot!(selection, linestyle = :dash, log.(sa.l2s[selection]),color = pred_col_c, width = 2, label = labels[3], grid = "off")
+vline!(selection_snips, linewidth = 2,color = "brown", label = "")
+savefig("paper/vdP/selection/loss_no_legend.jpg")
