@@ -37,7 +37,7 @@ plot(ode_data[1,:], ode_data[2,:],
     color = "brown")
 scatter!(ode_data[1,:], ode_data[2,:],label = "", color = "brown")
 #savefig("paper/vdP/Obs_statespace.pdf")
-scatter(t, ode_data[1,:], label="", color ="red", grid = "off",framestyle = :box)
+scatter(t, ode_data[1,:], label="", color ="red", grid = "off", framestyle = :box)
 scatter!(t, ode_data[2,:], label="", color ="blue")
 plot!(t, ode_data[1,:], label="", color ="red")
 plot!(t, ode_data[2,:], label="", color ="blue")
