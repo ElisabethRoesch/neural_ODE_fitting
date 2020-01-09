@@ -79,7 +79,7 @@ loss_n_ode = node_two_stage_function(dudt, u0, tspan, t, noise_ode_data, Tsit5()
 two_stage_loss_fct() = loss_n_ode.cost_function(ps)
 # Defining anonymous function for the neural ODE with the model. in: u0, out: solution with current params.
 n_ode = x->neural_ode(dudt, x, tspan, Tsit5(), saveat=t, reltol=1e-7, abstol=1e-9)
-n_epochs = 3501
+n_epochs = 6501
 verify = 50 # for <verify>th epoch the L2 is calculated
 data1 = Iterators.repeated((), n_epochs)
 opt1 = Descent(0.0001)
@@ -165,7 +165,7 @@ esti =loss_n_ode.estimated_solution
 using JLD
 JLD.save("paper/vdP/col_noise/savelosses.jld", "losses", sa.losses)
 JLD.save("paper/vdP/col_noise/savetimes.jld", "times", sa.times)
-JLD.save("paper/vdP/col_noise/savel2s.jld", "times", sa.l2s)
+JLD.save("paper/vdP/col_noise/savel2s.jld", "l2s", sa.l2s)
 
 plot(noise_ode_data[test[1],:], noise_ode_data[test[2],:],
     label = "",

@@ -20,7 +20,7 @@ key_list = Array(range(1,step=50,stop=n_epochs))
 col = pred_l2_c
 col = pred_col_c
 
-foldername = "col"
+foldername = "col_noise"
 #Plots.scalefontsizes(0.8)
 for key_t in key_list
     @load string("paper/vdP/",foldername,"/", key_t, "te_dudt.bson") dudt
@@ -36,7 +36,3 @@ for key_t in key_list
     display(a)
     savefig(string("paper/vdP/",foldername,"/plots/",key_t,"te_fit_selected.pdf"))
 end
-
-scatter(markerstrokecolor = obs_c, ode_data[1,:], ode_data[2,:], label = "", color = obs_c)
-
-ode_data[1,:]
