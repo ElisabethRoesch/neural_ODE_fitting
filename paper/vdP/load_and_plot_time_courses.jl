@@ -20,7 +20,7 @@ key_list = Array(range(1,step=50,stop=n_epochs))
 col = pred_l2_c
 col = pred_col_c
 
-foldername = "col_noise"
+foldername = "col_very_low_noise"
 #Plots.scalefontsizes(0.8)
 for key_t in key_list
     @load string("paper/vdP/", foldername, "/", key_t, "te_dudt.bson") dudt

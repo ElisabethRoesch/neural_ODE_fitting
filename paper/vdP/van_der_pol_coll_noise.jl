@@ -30,7 +30,7 @@ scatter!(t, ode_data[2,:], label="", color ="blue")
 plot!(t, ode_data[1,:], label="", color ="red")
 plot!(t, ode_data[2,:], label="", color ="blue")
 #savefig("paper/vdP/Obs_time.pdf")
-noise = rand(size(ode_data)[1],size(ode_data)[2]).*0.5
+noise = rand(size(ode_data)[1],size(ode_data)[2]).*0.1
 noise_ode_data = ode_data.+noise
 scatter(t, noise_ode_data[1,:], label="", color ="red", grid = "off",framestyle = :box)
 scatter!(t, noise_ode_data[2,:], label="", color ="blue")
@@ -79,7 +79,7 @@ loss_n_ode = node_two_stage_function(dudt, u0, tspan, t, noise_ode_data, Tsit5()
 two_stage_loss_fct() = loss_n_ode.cost_function(ps)
 # Defining anonymous function for the neural ODE with the model. in: u0, out: solution with current params.
 n_ode = x->neural_ode(dudt, x, tspan, Tsit5(), saveat=t, reltol=1e-7, abstol=1e-9)
-n_epochs = 6501
+n_epochs = 3501
 verify = 50 # for <verify>th epoch the L2 is calculated
 data1 = Iterators.repeated((), n_epochs)
 opt1 = Descent(0.0001)
@@ -128,7 +128,7 @@ cb1 = function ()
         plot!(Flux.data(pred[1,:]),linewidth=3, Flux.data(pred[2,:]), color = col, label = "")
         scatter!(markerstrokecolor = col, Flux.data(pred[1,:]), Flux.data(pred[2,:]), label = "", color = col)
         display(a)
-        @save string("paper/vdP/col_noise/", sa.count_epochs,"te_dudt.bson") dudt
+        @save string("paper/vdP/col_very_low_noise/", sa.count_epochs,"te_dudt.bson") dudt
         #savefig(string("paper/vdP/", sa.count_epochs, "_statespace.pdf"))
     else
         update_saver(sa, Tracker.data(two_stage_loss_fct()),0,Dates.Time(Dates.now()))
@@ -163,9 +163,9 @@ esti =loss_n_ode.estimated_solution
 
 
 using JLD
-JLD.save("paper/vdP/col_noise/savelosses.jld", "losses", sa.losses)
-JLD.save("paper/vdP/col_noise/savetimes.jld", "times", sa.times)
-JLD.save("paper/vdP/col_noise/savel2s.jld", "l2s", sa.l2s)
+JLD.save("paper/vdP/col_very_low_noise/savelosses.jld", "losses", sa.losses)
+JLD.save("paper/vdP/col_very_low_noise/savetimes.jld", "times", sa.times)
+JLD.save("paper/vdP/col_very_low_noise/savel2s.jld", "l2s", sa.l2s)
 
 plot(noise_ode_data[test[1],:], noise_ode_data[test[2],:],
     label = "",
@@ -201,7 +201,7 @@ end
 quiv_plt=quiver(cords, quiver=grads,  size = (500,500), grid = :off,framestyle = :box)
 plot!(ode_data[test[1],:], ode_data[test[2],:], ylim = (-3,3), xlim = (-3,3), linewidth =4, color = "red",xlab = species[test[1]], ylab = species[test[2]], label = "", legend=:bottomright, grid = "off",framestyle = :box)
 display(quiv_plt)
-savefig("paper/vdP/observation_quiver.pdf")
+savefig("paper/vdP/col_very_low_noise/selection/observation_quiver.pdf")
 
 
 
@@ -212,12 +212,12 @@ selection = range(1,step = 50, stop =3501)
 selection_snips = Array(range(1,step = 750, stop =3501))
 #pl_1_x=range(1,stop=length(sa_l2.losses))[selection]
 #pl_1_y=log.(sa_l2.losses)[selection]
-pl_2_x=range(1,stop=length(sa.losses))[selection]
-pl_2_y= log.(sa.losses)[selection]
+pl_2_x = range(1, stop = length(sa.losses))[selection]
+pl_2_y = log.(sa.losses)[selection]
 #plot(pl_1_x,pl_1_y, color = pred_l2_c, margin=5Plots.mm, width =2, label =labels[1],  grid = "off")
 #scatter!([pl_1_x[1],pl_1_x[end]],[pl_1_y[1],pl_1_y[end]], color = pred_l2_c, margin=5Plots.mm, width  =2, label ="",  grid = "off")
-plot(pl_2_x, pl_2_y, color = pred_col_c, width=2, label = labels[2], xlab = "Training epoch", ylab= "Log(Loss)", grid = "off")
-scatter!([pl_2_x[1],pl_2_x[end]],[pl_2_y[1],pl_2_y[end]], color = pred_col_c, margin=5Plots.mm, width  =2, label ="",  grid = "off")
+plot(pl_2_x, pl_2_y, color = pred_col_c, width = 2, label = labels[2], xlab = "Training epoch", ylab = "Log(Loss)", grid = "off")
+scatter!([pl_2_x[1],pl_2_x[end]],[pl_2_y[1],pl_2_y[end]], color = pred_col_c, margin = 5Plots.mm, width = 2, label = "",  grid = "off")
 plot!(selection, linestyle = :dash, log.(sa.l2s[selection]),color = pred_col_c, width = 2, label = labels[3], grid = "off")
 vline!(selection_snips, linewidth = 2,color = "brown", label = "")
-savefig("paper/vdP/selection/loss_no_legend.jpg")
+savefig("paper/vdP/col_very_low_noise/selection/loss_no_legend.png")
