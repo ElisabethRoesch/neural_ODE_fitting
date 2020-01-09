@@ -98,7 +98,7 @@ scatter!(t, Flux.data(pred[test[2],:]), label="", color ="brown")
 plot!(t,Flux.data(pred[test[1],:]), label="", color ="green")
 plot!(t, Flux.data(pred[test[2],:]), label="", color ="brown")
 
-a=2
+
 # plot(ode_data[test[1],:], ode_data[test[2],:],
 #     label = "",
 #     xlab = species[test[1]], ylab = species[test[2]], grid = "off", framestyle = :box,
