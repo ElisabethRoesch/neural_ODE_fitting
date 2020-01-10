@@ -64,5 +64,5 @@ for i in 1:length(foldernames)
 
     display(a)
     #savefig(string("paper/vdP/", foldername, "/plots/time_course_", key_t, "te_fit_selected_testing.pdf"))
-    savefig(string("paper/vdP/noise_figure_selected_sub_plots/", foldername,".pdf"))
+    savefig(string("paper/vdP/noise_figure_selected_sub_plots/", foldername,"reruns.pdf"))
 end

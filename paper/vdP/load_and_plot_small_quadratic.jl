@@ -20,10 +20,10 @@ key_list = Array(range(1,step=50,stop=n_epochs))
 col = pred_l2_c
 col = pred_col_c
 
-foldername = "col_low_noise"
+foldername = "col_high_noise"
 #Plots.scalefontsizes(0.8)
 for key_t in key_list
-    @load string("paper/vdP/",foldername,"/", key_t, "te_dudt.bson") dudt
+    @load string("/Users/eroesch/github/neural_ODE_fitting/paper/vdP/",foldername,"/", key_t, "te_dudt.bson") dudt
     n_ode = x->neural_ode(dudt, x, tspan, Tsit5(), saveat=t, reltol=1e-7, abstol=1e-9)
     pred = n_ode(u0)
     a = plot(ode_data[1,:], ode_data[2,:],
@@ -34,5 +34,5 @@ for key_t in key_list
     plot!(Flux.data(pred[1,:]),linewidth=3, Flux.data(pred[2,:]), color = col, label = "")
     scatter!(markerstrokecolor = col, Flux.data(pred[1,:]), Flux.data(pred[2,:]), label = "", color = col)
     display(a)
-    savefig(string("paper/vdP/",foldername,"/plots/",key_t,"te_fit_selected.pdf"))
+    #savefig(string("paper/vdP/",foldername,"/plots/",key_t,"te_fit_selected.pdf"))
 end

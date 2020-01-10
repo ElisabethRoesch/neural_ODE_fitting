@@ -77,7 +77,7 @@ loss_n_ode = node_two_stage_function(dudt, u0, tspan, t, noise_ode_data, Tsit5()
 two_stage_loss_fct() = loss_n_ode.cost_function(ps)
 # Defining anonymous function for the neural ODE with the model. in: u0, out: solution with current params.
 n_ode = x->neural_ode(dudt, x, tspan, Tsit5(), saveat=t, reltol=1e-7, abstol=1e-9)
-n_epochs = 3501
+n_epochs = 8501
 verify = 50 # for <verify>th epoch the L2 is calculated
 data1 = Iterators.repeated((), n_epochs)
 opt1 = Descent(0.0001)
@@ -127,14 +127,13 @@ cb1 = function ()
         # plot!(Flux.data(pred[1,:]),linewidth=3, Flux.data(pred[2,:]), color = col, label = "")
         # scatter!(markerstrokecolor = col, Flux.data(pred[1,:]), Flux.data(pred[2,:]), label = "", color = col)
         # display(a)
-        @save string("paper/vdP/col_medium_noise/", sa.count_epochs,"te_dudt_medium_re.bson") dudt
+        @save string("/Users/eroesch/github/neural_ODE_fitting/paper/vdP/col_medium_noise/", sa.count_epochs, "te_dudt_medium_re.bson") dudt
         #savefig(string("paper/vdP/", sa.count_epochs, "_statespace.pdf"))
     else
         update_saver(sa, Tracker.data(two_stage_loss_fct()),0,Dates.Time(Dates.now()))
         # println("\"",Tracker.data(two_stage_loss_fct()),"\" \"",Dates.Time(Dates.now()),"\";")
     end
 end
-
 test=[1,2]
 species = ["X","Y"]
 pred = n_ode(u0)
@@ -162,10 +161,10 @@ pred = n_ode(u0)
 
 
 using JLD
-JLD.save("paper/vdP/col_low_noise/savelosses_re.jld", "losses", sa.losses)
-JLD.save("paper/vdP/col_low_noise/savetimes_re.jld", "times", sa.times)
-JLD.save("paper/vdP/col_low_noise/savel2s_re.jld", "l2s", sa.l2s)
-
+JLD.save("/Users/eroesch/github/neural_ODE_fitting/paper/vdP/col_medium_noise/savelosses_re.jld", "losses", sa.losses)
+JLD.save("/Users/eroesch/github/neural_ODE_fitting/paper/vdP/col_medium_noise/savetimes_re.jld", "times", sa.times)
+JLD.save("/Users/eroesch/github/neural_ODE_fitting/paper/vdP/col_medium_noise/savel2s_re.jld", "l2s", sa.l2s)
+a
 # plot(noise_ode_data[test[1],:], noise_ode_data[test[2],:],
 #     label = "",
 #     xlab = species[test[1]], ylab = species[test[2]], grid = "off", framestyle = :box,

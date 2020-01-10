@@ -35,7 +35,7 @@ key_list = Array(range(1,step=50,stop=n_epochs))
 lime = maximum(ode_data)
 col = pred_l2_c
 col = pred_col_c
-foldernames = [ "col", "col_low_noise", "col_medium_noise", "col_high_noise"]
+foldernames = [ "col_no_noise", "col_low_noise", "col_medium_noise", "col_high_noise"]
 l2_test_losses = []
 #Plots.scalefontsizes(0.8)
 for foldername in foldernames
