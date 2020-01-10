@@ -127,7 +127,7 @@ cb1 = function ()
         plot!(Flux.data(pred[1,:]),linewidth=3, Flux.data(pred[2,:]), color = col, label = "")
         scatter!(markerstrokecolor = col, Flux.data(pred[1,:]), Flux.data(pred[2,:]), label = "", color = col)
         display(a)
-        @save string("paper/vdP/col_very_low_noise/", sa.count_epochs,"te_dudt.bson") dudt
+        @save string("paper/vdP/col_very_low_noise/", sa.count_epochs,"te_dudt_re.bson") dudt
         #savefig(string("paper/vdP/", sa.count_epochs, "_statespace.pdf"))
     else
         update_saver(sa, Tracker.data(two_stage_loss_fct()),0,Dates.Time(Dates.now()))
@@ -162,9 +162,9 @@ esti =loss_n_ode.estimated_solution
 
 
 using JLD
-JLD.save("paper/vdP/col_very_low_noise/savelosses.jld", "losses", sa.losses)
-JLD.save("paper/vdP/col_very_low_noise/savetimes.jld", "times", sa.times)
-JLD.save("paper/vdP/col_very_low_noise/savel2s.jld", "l2s", sa.l2s)
+JLD.save("paper/vdP/col_very_low_noise/savelosses_re.jld", "losses", sa.losses)
+JLD.save("paper/vdP/col_very_low_noise/savetimes_re.jld", "times", sa.times)
+JLD.save("paper/vdP/col_very_low_noise/savel2s_re.jld", "l2s", sa.l2s)
 
 plot(noise_ode_data[test[1],:], noise_ode_data[test[2],:],
     label = "",

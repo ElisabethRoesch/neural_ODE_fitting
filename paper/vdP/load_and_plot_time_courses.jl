@@ -23,26 +23,31 @@ function trueODEfunc(du, u, p, t)
   return du
 end
 
-prob = ODEProblem(trueODEfunc, u0, tspan_train)
-prob_ref = ODEProblem(trueODEfunc, u0, tspan_test)
 
-ode_data = Array(solve(prob,Tsit5(),saveat=t_train))
-noise = rand(size(ode_data)[1],size(ode_data)[2]).*0.
-ode_data = ode_data.+noise
-ode_data_ref = Array(solve(prob_ref,Tsit5(),saveat=t_test))
+
 key_list = Array(range(1,step=50,stop=n_epochs))
 key_list = [3501]
 lime = maximum(ode_data)
 col = pred_l2_c
 col = pred_col_c
 
-foldername = "col"
+foldernames = [ "col", "col_low_noise", "col_medium_noise", "col_high_noise"]
+noises = [0.0,0.1,0.2,0.5]
 #Plots.scalefontsizes(0.8)
-for key_t in key_list
+for i in 1:length(foldernames)
+        foldername = foldernames[i]
+        noise = noises[i]
+    key_t = "3501"
     @load string("paper/vdP/", foldername, "/", key_t, "te_dudt.bson") dudt
     n_ode = x->neural_ode(dudt, x, tspan_test, Tsit5(), saveat=t_test, reltol=1e-7, abstol=1e-9)
     pred = n_ode(u0)
-    ode_data_ref
+    prob = ODEProblem(trueODEfunc, u0, tspan_train)
+    prob_ref = ODEProblem(trueODEfunc, u0, tspan_test)
+
+    ode_data = Array(solve(prob,Tsit5(),saveat=t_train))
+    noise = rand(size(ode_data)[1],size(ode_data)[2]).*noise
+    ode_data = ode_data.+noise
+    ode_data_ref = Array(solve(prob_ref,Tsit5(),saveat=t_test))
     a=  scatter(t_train, ode_data[1,:], label = "", color = obs_c, grid = "off",framestyle = :box,
             ylim = (-3.5,3.5), size = (500,100), markersize = 2,
             yticks= ([-lime,0,lime],["","",""]),
