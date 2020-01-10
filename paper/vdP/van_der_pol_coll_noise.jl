@@ -16,8 +16,7 @@ obs_c = "#6C8EBF"
 col=pred_col_c
 prob = ODEProblem(trueODEfunc, u0, tspan)
 ode_data = Array(solve(prob,Tsit5(),saveat=t))
-species1 = "Van der Pol oscillator"
-species2 = "Dummy data";
+
 
 plot(ode_data[1,:], ode_data[2,:],
     label = "",
