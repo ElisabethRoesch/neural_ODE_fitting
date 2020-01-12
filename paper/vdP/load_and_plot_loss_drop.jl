@@ -56,7 +56,7 @@ a = plot(pl_2_x, pl_2_y, width = 2.5, color = cols[1], alpha = alphas[1],label =
 plot!(pl_2_x1, pl_2_y1, width = 2.5, color = cols[2], alpha = alphas[2], label = labels[2], grid = "off")
 plot!(pl_2_x2, pl_2_y2, width = 2.5, color = cols[3],alpha = alphas[3], label = labels[3],  grid = "off")
 plot!(pl_2_x3, pl_2_y3, width = 2.5, color = cols[4], alpha = alphas[4],label = labels[4],
-                xlab = "Training epoch", ylab = "Log(Loss)", margin=5Plots.mm, legend = :bottomleft, grid = "off")
+    size = (300,500),xlab = "Training epoch", ylab = "Log(Loss)", margin=5Plots.mm, legend = :bottomleft, grid = "off")
 
 #scatter!([ pl_2_x[end]], [pl_2_y[end]], color = pred_col_c, width  = 2, label = "")
 #scatter!([pl_2_x1[end]], [pl_2_y1[end]], color = pred_col_2, markershape = :utriangle, width = 2, label = "")
@@ -67,3 +67,4 @@ plot!(pl_2_x3, pl_2_y3, width = 2.5, color = cols[4], alpha = alphas[4],label = 
 
 
 savefig(string("paper/vdP/noise_figure_selected_sub_plots/loss_drop_noise_levels.pdf"))
+a
