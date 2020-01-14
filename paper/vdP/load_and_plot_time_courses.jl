@@ -13,7 +13,7 @@ cols = ["#696969","#920005","#920005","#920005"]
 #markerlinewidh low or line off for obs schatter
 col = pred_l2_c
 col = pred_col_c
-alphas = [1.,.1,.1,1.]
+alphas = [1.,1.,1.,1.]
 u0 = Float32[2.; 0.]
 datasize = 200
 end_train = 7.
