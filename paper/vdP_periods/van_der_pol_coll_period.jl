@@ -3,7 +3,7 @@ using BSON: @save
 u0 = Float32[2.; 0.]
 datasize = 200
 # 0.7 = 5, 0.85=6
-tspan = (0.0f0, 8.5f0)
+tspan = (0.0f0, 8.f0)
 t = range(tspan[1], tspan[2], length = datasize)
 function trueODEfunc(du, u, p, t)
   du[1] = u[2]
@@ -117,7 +117,7 @@ cb1 = function ()
         plot!(Flux.data(pred[1,:]),linewidth=3, Flux.data(pred[2,:]), color = col, label = "")
         scatter!(markerstrokecolor = col, Flux.data(pred[1,:]), Flux.data(pred[2,:]), label = "", color = col)
         display(a)
-        @save string("paper/vdP/col_periods_short_85/", sa.count_epochs,"te_dudt.bson") dudt
+        @save string("paper/vdP/col_periods_short_80/", sa.count_epochs,"te_dudt.bson") dudt
         #savefig(string("paper/vdP/", sa.count_epochs, "_statespace.pdf"))
     else
         update_saver(sa, Tracker.data(two_stage_loss_fct()),0,Dates.Time(Dates.now()))
@@ -152,9 +152,9 @@ esti =loss_n_ode.estimated_solution
 
 
 using JLD
-JLD.save("paper/vdP/col_periods_short_85/savelosses.jld", "losses", sa.losses)
-JLD.save("paper/vdP/col_periods_short_85/savetimes.jld", "times", sa.times)
-JLD.save("paper/vdP/col_periods_short_85/savel2s.jld", "times", sa.l2s)
+JLD.save("paper/vdP/col_periods_short_80/savelosses.jld", "losses", sa.losses)
+JLD.save("paper/vdP/col_periods_short_80/savetimes.jld", "times", sa.times)
+JLD.save("paper/vdP/col_periods_short_80/savel2s.jld", "times", sa.l2s)
 
 plot(ode_data[test[1],:], ode_data[test[2],:],
     label = "",
