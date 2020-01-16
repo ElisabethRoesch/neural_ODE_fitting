@@ -26,7 +26,7 @@ foldernames = ["col_periods_short_50", "col_periods_short_55",
                 "col_no_noise", "col_periods_short_75",
                 "col_periods_short_80", "col_periods_short_85"]
 
-ref_starts = [155,170,180,190,200,210,220,235]
+ref_starts = [150,160,175,190,200,212,230,245]
 for i in 1:length(foldernames)
     foldername = foldernames[i]
     key_t = string(final_epoch)
