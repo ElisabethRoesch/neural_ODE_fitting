@@ -1,7 +1,7 @@
+
 using Flux, DiffEqFlux, OrdinaryDiffEq, DiffEqParamEstim, Plots, Dates
 using BSON: @save
 using Flux: glorot_uniform
-using JLD
 mutable struct saver
     losses::Array{Float64,1}
     l2s::Array{Float64,1}
@@ -23,7 +23,7 @@ function update_saver(saver, loss_i, l2_i, time_i)
 end
 u0 = Float32[1.5; 0.]
 datasize = 200
-tspan = (0.0f0, 100.f0)
+tspan = (0.0f0, 3.f0)
 t = range(tspan[1], tspan[2], length = datasize)
 function trueODEfunc(du, u, p, t)
   true_A = [-0.1 2.0; -2.0 -0.1]
@@ -35,7 +35,7 @@ dudt = Chain((x->x.^3),
         Dense(2,50,tanh),
        Dense(50,2))
 ps = Flux.params(dudt)
-@save "paper/simple/a_collocation/init_dudt.bson" dudt
+@save "paper/simple/a_combine/init_dudt.bson" dudt
 function node_two_stage_function(model, x, tspan, saveat, ode_data,
             args...; kwargs...)
   dudt_(du,u,p,t) = du .= model(u)
@@ -43,17 +43,9 @@ function node_two_stage_function(model, x, tspan, saveat, ode_data,
   two_stage_method(prob_fly, saveat, ode_data)
 end
 loss_n_ode = node_two_stage_function(dudt, u0, tspan, t, ode_data, Tsit5(), reltol=1e-7, abstol=1e-9)
-
-
 two_stage_loss_fct()=loss_n_ode.cost_function(ps)
 esti =loss_n_ode.estimated_solution
 species = ["X","Y"]
-test = [1,2]
-# scatter!(esti[test[1],:], esti[test[2],:], label = "Path in state space", color = "red")
-# scatter(t, ode_data[1,:], label = "Observation: Species 1", grid = "off",legend =:topleft)
-# scatter!(t, ode_data[2,:], label = "Observation: Species 2")
-# scatter!(t, esti[1,:], label = "Estimation: Species 1")
-# scatter!(t, esti[2,:], label = "Estimation: Species 2")
 n_ode = x->neural_ode(dudt, x, tspan, Tsit5(), saveat=t, reltol=1e-7, abstol=1e-9)
 n_epochs = 1500
 verify = 50# for <verify>th epoch the L2 is calculated
@@ -65,76 +57,77 @@ L2_loss_fct() = sum(abs2,ode_data .- n_ode(u0))
 cb1 = function ()
     println(sa.count_epochs)
     sa.count_epochs = sa.count_epochs +  1
-    if mod(sa.count_epochs-1, verify)==0
-        update_saver(sa, Tracker.data(two_stage_loss_fct()),Tracker.data(L2_loss_fct()),Dates.Time(Dates.now()))
-        # println("\"",Tracker.data(two_stage_loss_fct()),"\" \"",Dates.Time(Dates.now()),"\";")
-        pred = n_ode(u0)
-        a = plot(ode_data[test[1],:], ode_data[test[2],:], color = "green",xlab = species[test[1]], ylab = species[test[2]], label = "", legend=:bottomright, grid = "off")
-        scatter!(ode_data[test[1],:], ode_data[test[2],:], label = "A", color = "green")
-        plot!(Flux.data(pred[test[1],:]), Flux.data(pred[test[2],:]), color = "red", xlab = species[test[1]], ylab = species[test[2]], label = "", grid = "off")
-        scatter!(Flux.data(pred[test[1],:]), Flux.data(pred[test[2],:]), label = "B", color = "red")
-        display(a)
-        #savefig(string("paper/simple/a_collocation/", sa.count_epochs,"te_fit_in_statespace.pdf"))
-        #@save string("paper/simple/a_collocation/", sa.count_epochs,"te_dudt.bson") dudt
-        grads = []
-        for i in cords
-            cord = [i[1], i[2]]
-            grad = Flux.data(dudt(cord))
-            tuple = (grad[1], grad[2])
-            push!(grads, tuple)
-        end
-        quiv_plt=quiver(cords, size = (500,500), quiver=grads, grid = :off,framestyle = :box)
-        plot!(ode_data[test[1],:], ode_data[test[2],:], ylim = (-3,3), xlim = (-3,3), linewidth =4, color = "red",xlab = species[test[1]], ylab = species[test[2]], label = "", legend=:bottomright, grid = "off")
-        display(quiv_plt)
-    else
-        update_saver(sa, Tracker.data(two_stage_loss_fct()),0,Dates.Time(Dates.now()))
-        # println("\"",Tracker.data(two_stage_loss_fct()),"\" \"",Dates.Time(Dates.now()),"\";")
-    end
+    # if mod(sa.count_epochs-1, verify)==0
+    #     update_saver(sa, Tracker.data(two_stage_loss_fct()),Tracker.data(L2_loss_fct()),Dates.Time(Dates.now()))
+    #     # println("\"",Tracker.data(two_stage_loss_fct()),"\" \"",Dates.Time(Dates.now()),"\";")
+    #     pred = n_ode(u0)
+    #     a = plot(ode_data[1,:], ode_data[2,:], color = "green",xlab = species[1], ylab = species[2], label = "", legend=:bottomright, grid = "off")
+    #     scatter!(ode_data[1,:], ode_data[2,:], label = "A", color = "green")
+    #     plot!(Flux.data(pred[1,:]), Flux.data(pred[2,:]), color = "red", xlab = species[1], ylab = species[2], label = "", grid = "off")
+    #     scatter!(Flux.data(pred[1,:]), Flux.data(pred[2,:]), label = "B", color = "red")
+    #     display(a)
+    #     #savefig(string("paper/simple/col/", sa.count_epochs,"te_fit_in_statespace.pdf"))
+    #     #@save string("paper/simple/col/", sa.count_epochs,"te_dudt.bson") dudt
+    #     grads = []
+    #     for i in cords
+    #         cord = [i[1], i[2]]
+    #         grad = Flux.data(dudt(cord))
+    #         tuple = (grad[1], grad[2])
+    #         push!(grads, tuple)
+    #     end
+    #     quiv_plt=quiver(cords, size = (500,500), quiver=grads, grid = :off,framestyle = :box)
+    #     plot!(ode_data[1,:], ode_data[2,:], ylim = (-3,3), xlim = (-3,3), linewidth =4, color = "red",xlab = species[1], ylab = species[2], label = "", legend=:bottomright, grid = "off")
+    #     display(quiv_plt)
+    #
+    # else
+    #     update_saver(sa, Tracker.data(two_stage_loss_fct()),0,Dates.Time(Dates.now()))
+    #     # println("\"",Tracker.data(two_stage_loss_fct()),"\" \"",Dates.Time(Dates.now()),"\";")
+    # end
+
 end
 @time Flux.train!(two_stage_loss_fct, ps, data1, opt1, cb = cb1)
-JLD.save("paper/simple/a_collocation/savelosses.jld", "col_losses", sa.losses)
-JLD.save("paper/simple/a_collocation/savetimes.jld", "col_times", sa.times)
-JLD.save("paper/simple/a_collocation/savel2s.jld", "col_l2s", sa.l2s)
-
-# pred = n_ode(u0)
-# a = plot(ode_data[test[1],:], ode_data[test[2],:], color = "green",xlab = species[test[1]], ylab = species[test[2]], label = "", legend=:bottomright, grid = "off")
-# scatter!(ode_data[test[1],:], ode_data[test[2],:], label = "A", color = "green")
-# plot!(Flux.data(pred[test[1],:]), Flux.data(pred[test[2],:]), color = "red", xlab = species[test[1]], ylab = species[test[2]], label = "", grid = "off")
-# scatter!(Flux.data(pred[test[1],:]), Flux.data(pred[test[2],:]), label = "B", color = "red")
-# display(a)
-#savefig(string("paper/simple/a_collocation/", sa.count_epochs,"te_fit_in_statespace.pdf"))
-#@save string("paper/simple/a_collocation/", sa.count_epochs,"te_dudt.bson") dudt
+pred = n_ode(u0)
+a = plot(ode_data[1,:], ode_data[2,:], color = "green",xlab = species[1], ylab = species[2], label = "", legend=:bottomright, grid = "off")
+scatter!(ode_data[1,:], ode_data[2,:], label = "A", color = "green")
+plot!(Flux.data(pred[1,:]), Flux.data(pred[2,:]), color = "red", xlab = species[1], ylab = species[2], label = "", grid = "off")
+scatter!(Flux.data(pred[1,:]), Flux.data(pred[2,:]), label = "B", color = "red")
+display(a)
+#savefig(string("paper/simple/col/", sa.count_epochs,"te_fit_in_statespace.pdf"))
+#@save string("paper/simple/col/", sa.count_epochs,"te_dudt.bson") dudt
 
 
-# est_c = "#D6B656"
-# pred_col_c = "#82B366"
-# pred_l2_c = "#9673A6"
-# obs_c = "#6C8EBF"
+est_c = "#D6B656"
+pred_col_c = "#82B366"
+pred_l2_c = "#9673A6"
+obs_c = "#6C8EBF"
 
 
-# plot(ode_data[test[1],:], ode_data[test[2],:],
-#     label = "", ylim = (-1.7,1.7), xlim = (-1.7,1.7) ,xticks= [-1.0,1], yticks= [-1,1], size=(500,500), margin=5Plots.mm,
-#     xlab = species[test[1]], ylab = species[test[2]], grid = "off",framestyle = :box,
-#     color = obs_c)
-# scatter!(ode_data[test[1],:], ode_data[test[2],:], label = "", color = obs_c)
-# savefig("paper/simple/Obs.pdf")
+plot(ode_data[1,:], ode_data[2,:],
+    label = "", ylim = (-1.7,1.7), xlim = (-1.7,1.7) ,xticks= [-1.0,1], yticks= [-1,1], size=(500,500), margin=5Plots.mm,
+    xlab = species[1], ylab = species[2], grid = "off",framestyle = :box,
+    color = obs_c)
+scatter!(ode_data[1,:], ode_data[2,:], label = "", color = obs_c)
+savefig("paper/simple/Obs.pdf")
 
 
 
-# plot(ode_data[test[1],:], ode_data[test[2],:],
-#     label = "", ylim = (-1.7,1.7), xlim = (-1.7,1.7) ,xticks= [-1.0,1], yticks= [-1,1], size=(500,500), margin=5Plots.mm,
-#     xlab = species[test[1]], ylab = species[test[2]], grid = "off", framestyle = :box,
-#     color = obs_c)
-# scatter!(ode_data[test[1],:], ode_data[test[2],:], label = "", color = obs_c)
-# plot!(esti[test[1],:], esti[test[2],:], label = "", color = est_c)
-# scatter!(esti[test[1],:], esti[test[2],:], label = "", color = est_c)
-# plot!(Flux.data(pred[test[1],:]), Flux.data(pred[test[2],:]), color = pred_col_c, label = "")
-# scatter!(Flux.data(pred[test[1],:]), Flux.data(pred[test[2],:]), label = "", color = pred_col_c)
-# savefig("paper/simple/Obs_Esti_Pred.pdf")
-#
+plot(ode_data[1,:], ode_data[2,:],
+    label = "", ylim = (-1.7,1.7), xlim = (-1.7,1.7) ,xticks= [-1.0,1], yticks= [-1,1], size=(500,500), margin=5Plots.mm,
+    xlab = species[1], ylab = species[2], grid = "off", framestyle = :box,
+    color = obs_c)
+scatter!(ode_data[1,:], ode_data[2,:], label = "", color = obs_c)
+plot!(esti[1,:], esti[2,:], label = "", color = est_c)
+scatter!(esti[1,:], esti[2,:], label = "", color = est_c)
+plot!(Flux.data(pred[1,:]), Flux.data(pred[2,:]), color = pred_col_c, label = "")
+scatter!(Flux.data(pred[1,:]), Flux.data(pred[2,:]), label = "", color = pred_col_c)
+savefig("paper/simple/Obs_Esti_Pred.pdf")
 
 
 
+using JLD
+JLD.save("paper/simple/col/savelosses.jld", "col_losses", sa.losses)
+JLD.save("paper/simple/col/savetimes.jld", "col_times", sa.times)
+JLD.save("paper/simple/col/savel2s.jld", "col_l2s", sa.l2s)
 
 # scatter(t, ode_data[1,:], label = "data", grid = "off")
 # scatter!(t, ode_data[2,:], label = "data")

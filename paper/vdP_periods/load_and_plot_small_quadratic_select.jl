@@ -32,9 +32,6 @@ foldernames = ["col_periods_short_50",
                 "col_periods_short_80", "col_periods_short_85"]
 # lengths = [5.0, 5.5, 6.0, 6.5 ,7.0, 7.5,8.0, 8.5]
 lengths = [5.0, 6.0, 6.5 ,7.0, 8.0, 8.5]
-
-alphas = [1.]
-colors = ["#920005", "#920005", "#920005", "#920005", "#6C8EBF", "#6C8EBF", "#6C8EBF", "#6C8EBF"]
 a = plot(ode_data[1,:], ode_data[2,:],
     label = "", ylim = (-3,3), xlim = (-3,3) ,xticks = ([-1,1],["",""]), yticks = ([-1,1],["",""]), size = (200,200), margin = 5Plots.mm,
     xlab = "",linewidth = 3, ylab = "", grid = "off", framestyle = :box,
@@ -59,4 +56,4 @@ for i in 1:length(foldernames)
 end
 
 display(a)
-savefig(string("paper/vdP/periods/figure/stop_points_state_space.pdf"))
+savefig(string("paper/vdP/periods/figure/stop_points_state_space_reduced.pdf"))
