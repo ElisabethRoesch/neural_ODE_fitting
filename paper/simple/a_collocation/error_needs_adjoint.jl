@@ -32,4 +32,4 @@ L2_loss_fct() = sum(abs2,ode_data .- n_ode(u0))
 cb1 = function ()
     println("hi")
 end
-@time Flux.train!(two_stage_loss_fct, ps, data1, opt1, cb = cb1)
+@time Flux.train!(L2_loss_fct, ps, data1, opt1, cb = cb1)
