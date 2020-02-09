@@ -46,8 +46,20 @@ res1 = DiffEqFlux.sciml_train!(loss_n_ode, n_ode.p, ADAM(0.05), cb = cb, maxiter
 
 
 
+using DifferentialEquations
 
-function dudt(du,u,p,t)
-  du[1]= 1.1*u[1]
-  du[2]= 1.1*u[2]
+
+function deriv(du,u,p,t)
+  du[1]= p[1]*u[1]
+  du[2]= p[2]*u[2]
   return du
+end
+
+u0 = Float32[3.; 0.]
+datasize = 30
+tspan = (0.0f0,1.5f0)
+p=[1.1; 2.1]
+
+t = range(tspan[1],tspan[2],length=datasize)
+prob = ODEProblem(deriv,u0,tspan,p)
+ode_data = Array(solve(prob,Tsit5(),saveat=t))

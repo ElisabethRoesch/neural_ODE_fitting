@@ -33,16 +33,15 @@ function node_two_stage_function(model, x, tspan, saveat, ode_data,
   two_stage_method(prob_fly, saveat, ode_data)
 end
 node_two_stage = node_two_stage_function(dudt, u0, tspan, t, ode_data, Tsit5(), reltol=1e-7, abstol=1e-9)
-#
-loss_n_ode = node_two_stage.cost_function
-loss_n_ode(n_ode.p) # n_ode.p stores the initial parameters of the neural ODE
 
+loss_n_ode = node_two_stage.cost_function
+#loss_n_ode(n_ode.p)
 function los(p)
   l = loss_n_ode(p)
   pred = predict_n_ode(p)
   return l,pred
 end
-
+los(n_ode.p)
 cb = function (p,l,pred) #callback function to observe training
   # display(l)
   # pred = predict_n_ode(p)
