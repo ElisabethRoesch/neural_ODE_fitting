@@ -15,9 +15,9 @@ losses1 = JLD.load(string("paper/simple/",foldername1,"/savelosses.jld"))["sal2_
 times1 = JLD.load(string("paper/simple/",foldername1,"/savetimes.jld"))["l2_times"]
 
 n = length(l2s)
-
-selection = Array(range(1,step = 1, stop =n))
-#selection_snips = Array(range(1,step = step_size, stop =n))
+step_size = 750
+selection = Array(range(1,step = 10, stop =n))
+selection_snips = [51,251,401,551,751]
 #pl_1_x=range(1,stop=length(sa_l2.losses))[selection]
 #pl_1_y=log.(sa_l2.losses)[selection]
 pl_2_x = range(1,stop=length(losses))[selection]
@@ -38,12 +38,12 @@ plot!(pl_2_x1, pl_2_y1, width = 2.5, color = cols[2],label = labels[2],
     grid = "off", xlab = "Training epoch",
     ylab = "Log(Loss)", margin = 5Plots.mm, legend = :bottomleft)
 
-#scatter!([ pl_2_x[end]], [pl_2_y[end]], color = pred_col_c, width  = 2, label = "")
-#scatter!([pl_2_x1[end]], [pl_2_y1[end]], color = pred_col_2, markershape = :utriangle, width = 2, label = "")
-#scatter!([pl_2_x2[end]], [pl_2_y2[end]], color = pred_col_2, width = 2, markershape = :dtriangle, label = "")
-#scatter!([pl_2_x3[end]], [pl_2_y3[end]], color = pred_col_2, width = 2, markershape = :diamond , label = "")
+scatter!([ pl_2_x[end]], [pl_2_y[end]], color = pred_col_c, width  = 2, label = "")
+scatter!([pl_2_x[1]], [pl_2_y[1]], color = pred_col_c, width = 2, label = "")
+scatter!([pl_2_x1[end]], [pl_2_y1[end]], color = pred_col_2, width = 2, label = "")
+scatter!([pl_2_x1[1]], [pl_2_y1[1]], color = pred_col_2, width = 2, label = "")
 #plot!(selection, linestyle = :dash, log.(l2s[selection]),color = pred_col_c, width = 2, label = labels[3], grid = "off")
-#vline!(selection_snips, linewidth = 2,color = "brown", label = "")
+vline!(selection_snips, linewidth = 2,color = "brown", label = "")
 
 
 savefig(string("paper/simple/selection/redo_lossdrop.pdf"))
