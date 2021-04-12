@@ -1,7 +1,7 @@
 using DiffEqFlux, OrdinaryDiffEq, Flux, Optim, Plots
 
 u0 = Float32[2.0; 0.0]
-datasize = 50
+datasize = 10
 tspan = (0.0f0, 1.5f0)
 tsteps = range(tspan[1], tspan[2], length = datasize)
 
@@ -17,9 +17,9 @@ du,u = collocate_data(data,tsteps,EpanechnikovKernel())
 
 scatter(tsteps,data')
 plot!(tsteps,u',lw=5)
-savefig("paper/sparse_data_ana/colloc_50.png")
+savefig("paper/sparse_data_ana/colloc_10.png")
 plot(tsteps,du')
-savefig("paper/sparse_data_ana/colloc_du_50.png")
+savefig("paper/sparse_data_ana/colloc_du_10.png")
 
 dudt2 = FastChain((x, p) -> x.^3,
                   FastDense(2, 50, tanh),
@@ -50,8 +50,8 @@ scatter(tsteps,data')
 plot!(nn_sol)
 # get final loss value
 val = result_neuralode.minimum
-savefig("paper/sparse_data_ana/colloc_trained_50_loss_$val.png")
-@save "paper/sparse_data_ana/50_dudt_stage1.bson" dudt2
+savefig("paper/sparse_data_ana/colloc_trained_10_loss_$val.png")
+@save "paper/sparse_data_ana/10_dudt_stage1.bson" dudt2
 
 function predict_neuralode(p)
   Array(prob_neuralode(u0, p))
@@ -70,5 +70,5 @@ end
 nn_sol = prob_neuralode(u0, numerical_neuralode.minimizer)
 scatter(tsteps,data')
 plot!(nn_sol,lw=5)
-savefig("paper/sparse_data_ana/post_trained_50.png")
-@save "paper/sparse_data_ana/50_dudt_stage2.bson" dudt2
+savefig("paper/sparse_data_ana/post_trained_10.png")
+@save "paper/sparse_data_ana/10_dudt_stage2.bson" dudt2

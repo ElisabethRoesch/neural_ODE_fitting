@@ -82,5 +82,5 @@ end
 nn_sol = prob_neuralode(u0, numerical_neuralode.minimizer)
 scatter(tsteps,data')
 plot!(nn_sol,lw=5)
-savefig("post_trained_300.png")
+savefig("paper/sparse_data_ana/post_trained_300.png")
 @save "paper/sparse_data_ana/300_dudt_stage2.bson" dudt2
