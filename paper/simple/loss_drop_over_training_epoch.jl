@@ -46,4 +46,4 @@ scatter!([pl_2_x1[1]], [pl_2_y1[1]], color = pred_col_2, width = 2, label = "")
 vline!(selection_snips, linewidth = 2,color = "brown", label = "")
 
 
-savefig(string("paper/simple/selection/redo_lossdrop.pdf"))
+savefig(string("paper/simple/selection/loss_drop_over_time.pdf"))
