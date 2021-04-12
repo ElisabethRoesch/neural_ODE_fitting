@@ -1,5 +1,15 @@
-using DiffEqFlux, OrdinaryDiffEq, Flux, Optim, Plots
-print("Pkgs done.")
+print("starting Pkgs...")
+using Plots #takes very long.
+print("Plots done.")
+using DiffEqFlux #takess long.
+print("DiffEqFlux done.")
+using OrdinaryDiffEq
+print("OrdinaryDiffEq done.")
+using Flux
+print("Flux done.")
+using Optim
+print("Optim done.")
+using BSON: @save
 u0 = Float32[2.0; 0.0]
 datasize = 300
 tspan = (0.0f0, 1.5f0)
@@ -52,7 +62,7 @@ plot!(nn_sol)
 # get final loss value
 val = result_neuralode.minimum
 savefig("paper/sparse_data_ana/colloc_trained_300_loss_$val.png")
-
+@save "paper/sparse_data_ana/300_dudt_stage1.bson" dudt2
 
 
 function predict_neuralode(p)
@@ -73,3 +83,4 @@ nn_sol = prob_neuralode(u0, numerical_neuralode.minimizer)
 scatter(tsteps,data')
 plot!(nn_sol,lw=5)
 savefig("post_trained_300.png")
+@save "paper/sparse_data_ana/300_dudt_stage2.bson" dudt2
