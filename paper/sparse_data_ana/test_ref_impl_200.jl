@@ -70,5 +70,6 @@ end
 nn_sol = prob_neuralode(u0, numerical_neuralode.minimizer)
 scatter(tsteps,data')
 plot!(nn_sol,lw=5)
-savefig("paper/sparse_data_ana/post_trained_200.png")
+val2 = numerical_neuralode.minimum
+savefig("paper/sparse_data_ana/post_trained_200_loss_$val2.png")
 @save "paper/sparse_data_ana/200_dudt_stage2.bson" dudt2
