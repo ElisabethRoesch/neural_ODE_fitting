@@ -1,5 +1,15 @@
-using DiffEqFlux, OrdinaryDiffEq, Flux, Optim, Plots
-
+print("starting Pkgs...")
+using Plots #takes very long.
+print("Plots done.")
+using DiffEqFlux #takess long.
+print("DiffEqFlux done.")
+using OrdinaryDiffEq
+print("OrdinaryDiffEq done.")
+using Flux
+print("Flux done.")
+using Optim
+print("Optim done.")
+using BSON: @save
 u0 = Float32[2.0; 0.0]
 datasize = 50
 tspan = (0.0f0, 1.5f0)
